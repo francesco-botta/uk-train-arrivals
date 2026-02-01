@@ -41,59 +41,70 @@ header h1 {
 
 .route-inputs {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
-    gap: 15px;
-    flex-wrap: wrap;
+    gap: 0;
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .station-input-group {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex: 1;
-    min-width: 250px;
-    max-width: 350px;
+    padding: 15px 20px;
+}
+
+.station-input-group:first-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .station-input-group label {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    font-weight: 600;
 }
 
 .selected-station {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: #00d4ff;
     font-weight: 600;
+    text-align: center;
+    min-height: 1.4em;
 }
 
 .swap-button-container {
     display: flex;
     align-items: center;
-    padding-top: 25px;
+    padding: 0 5px;
 }
 
 .swap-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 2px solid #3a3a5c;
-    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    background: rgba(0, 212, 255, 0.1);
     color: #00d4ff;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
     transition: all 0.3s;
+    box-shadow: 0 2px 10px rgba(0, 212, 255, 0.2);
 }
 
 .swap-btn:hover {
     border-color: #00d4ff;
-    background: rgba(0, 212, 255, 0.2);
+    background: rgba(0, 212, 255, 0.25);
     transform: rotate(180deg);
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
 }
 
 .search-container {
@@ -104,25 +115,27 @@ header h1 {
 #from-station-search,
 #to-station-search {
     width: 100%;
-    padding: 12px 20px;
-    font-size: 1rem;
-    border: 2px solid #3a3a5c;
-    border-radius: 25px;
-    background: rgba(255, 255, 255, 0.1);
+    padding: 14px 20px;
+    font-size: 0.95rem;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.3);
     color: #fff;
     outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    transition: all 0.3s;
 }
 
 #from-station-search::placeholder,
 #to-station-search::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.9rem;
 }
 
 #from-station-search:focus,
 #to-station-search:focus {
     border-color: #00d4ff;
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2), inset 0 0 10px rgba(0, 212, 255, 0.05);
 }
 
 .search-results {
@@ -400,16 +413,27 @@ footer {
 
     .route-inputs {
         flex-direction: column;
-        gap: 10px;
+        gap: 0;
+        padding: 15px;
     }
 
     .station-input-group {
-        min-width: 100%;
+        width: 100%;
+        padding: 15px;
+    }
+
+    .station-input-group:first-child {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .swap-button-container {
-        padding-top: 0;
+        padding: 10px 0;
         transform: rotate(90deg);
+    }
+
+    .selected-station {
+        font-size: 1rem;
     }
 
     .train-board th,
