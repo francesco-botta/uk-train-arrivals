@@ -138,6 +138,22 @@ header h1 {
     box-shadow: 0 0 20px rgba(0, 212, 255, 0.2), inset 0 0 10px rgba(0, 212, 255, 0.05);
 }
 
+#from-station-search.highlight,
+#to-station-search.highlight {
+    animation: pulse-highlight 0.5s ease-in-out 3;
+}
+
+@keyframes pulse-highlight {
+    0%, 100% {
+        border-color: #00d4ff;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    }
+    50% {
+        border-color: #7b2cbf;
+        box-shadow: 0 0 20px rgba(123, 44, 191, 0.5);
+    }
+}
+
 .search-results {
     position: absolute;
     top: 100%;

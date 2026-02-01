@@ -154,20 +154,30 @@ function setupEventListeners() {
                 toStation = { code: null, name: null };
                 updateFromStationDisplay();
                 updateToStationDisplay();
+                updateURL();
 
                 // Focus on the from station search and show prompt
-                fromStationSearch.focus();
-                fromStationSearch.placeholder = 'Type to search for a station...';
+                fromStationSearch.value = '';
+                fromStationSearch.placeholder = 'Type station name or code...';
+
+                // Use setTimeout to ensure focus works after DOM updates
+                setTimeout(() => {
+                    fromStationSearch.focus();
+                    // Add highlight effect
+                    fromStationSearch.classList.add('highlight');
+                    setTimeout(() => fromStationSearch.classList.remove('highlight'), 2000);
+                }, 100);
 
                 // Show prompt in the train list
                 trainBoard.style.display = 'table';
                 loadingEl.style.display = 'none';
+                errorEl.style.display = 'none';
                 trainList.innerHTML = `
                     <tr>
                         <td colspan="6">
                             <div class="empty-state">
                                 <h3>Select a Station</h3>
-                                <p>Search for a station above to see all departures.</p>
+                                <p>Type in the "From" field above to search for a station and see all departures.</p>
                             </div>
                         </td>
                     </tr>
@@ -259,10 +269,8 @@ function selectFromStation(code, name) {
     fromStationSearch.placeholder = 'Departure station...';
     updateFromStationDisplay();
 
-    // Switch to Station Departures tab and clear "to" station
+    // Switch to Station Departures tab (keep "to" station if set)
     currentTab = 'departures';
-    toStation = { code: null, name: null };
-    updateToStationDisplay();
     tabBtns.forEach(b => b.classList.remove('active'));
     document.querySelector('[data-tab="departures"]').classList.add('active');
 
@@ -277,10 +285,29 @@ function selectToStation(code, name) {
     toStationSearch.value = '';
     updateToStationDisplay();
 
-    // Clear route tab selection
+    // Switch to Station Departures tab
     currentTab = 'departures';
     tabBtns.forEach(b => b.classList.remove('active'));
     document.querySelector('[data-tab="departures"]').classList.add('active');
+
+    // If no "from" station selected, prompt user to select one
+    if (!fromStation.code) {
+        fromStationSearch.focus();
+        fromStationSearch.placeholder = 'Now select departure station...';
+        trainBoard.style.display = 'table';
+        loadingEl.style.display = 'none';
+        trainList.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <h3>Select Departure Station</h3>
+                        <p>You've selected ${name} as destination. Now search for a departure station above.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
     updateURL();
     loadTrains();
