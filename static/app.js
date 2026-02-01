@@ -314,6 +314,9 @@ function selectFromStation(code, name) {
     fromStationSearch.placeholder = 'Departure station...';
     updateFromStationDisplay();
 
+    // Make sure toStation display is in sync (in case it was cleared by departures section)
+    updateToStationDisplay();
+
     // Clear route tab selection since we're using a custom route
     currentTab = 'custom';
     tabBtns.forEach(b => b.classList.remove('active'));
@@ -322,7 +325,9 @@ function selectFromStation(code, name) {
     departuresStationDisplay.textContent = '';
     departuresStationSearch.value = '';
 
-    updateURL();
+    if (fromStation.code) {
+        updateURL();
+    }
     document.title = `UK Train Times - ${name}`;
     loadTrains();
     resetCountdown();
@@ -332,6 +337,9 @@ function selectToStation(code, name) {
     toStation = { code, name };
     toStationSearch.value = '';
     updateToStationDisplay();
+
+    // Make sure fromStation display is in sync (in case it was cleared by departures section)
+    updateFromStationDisplay();
 
     // Clear route tab selection since we're using a custom route
     currentTab = 'custom';
@@ -360,7 +368,9 @@ function selectToStation(code, name) {
         return;
     }
 
-    updateURL();
+    if (fromStation.code) {
+        updateURL();
+    }
     loadTrains();
     resetCountdown();
 }
@@ -444,6 +454,7 @@ async function loadTrains() {
         const chunkSize = 30;
         const allServices = {};
         let generatedAt = null;
+        let failedChunks = 0;
 
         const numChunks = Math.ceil(timeWindow / chunkSize);
 
@@ -468,6 +479,7 @@ async function loadTrains() {
                 }
             } catch (e) {
                 console.warn(`Failed to fetch chunk ${i}:`, e);
+                failedChunks++;
             }
         }
 
@@ -475,7 +487,7 @@ async function loadTrains() {
         const services = Object.values(allServices);
         services.sort((a, b) => (a.std || '99:99').localeCompare(b.std || '99:99'));
 
-        renderTrains(services);
+        renderTrains(services, failedChunks > 0);
         updateLastUpdated(generatedAt);
 
         loadingEl.style.display = 'none';
@@ -484,6 +496,7 @@ async function loadTrains() {
         loadingEl.style.display = 'none';
         errorEl.textContent = `Error loading train times: ${error.message}`;
         errorEl.style.display = 'block';
+        trainBoard.style.display = 'none';
     }
 }
 
@@ -514,7 +527,7 @@ function filterByTimeInterval(services) {
     });
 }
 
-function renderTrains(services) {
+function renderTrains(services, hadErrors = false) {
     const filteredServices = filterByTimeInterval(services || []);
 
     if (!filteredServices || filteredServices.length === 0) {
@@ -524,12 +537,14 @@ function renderTrains(services) {
         const routeText = toStation.code
             ? ` to ${toStation.name}`
             : '';
+        const errorNote = hadErrors ? '<p style="color: #ffc107; font-size: 0.85rem; margin-top: 10px;">Note: Some data may be unavailable due to connection issues.</p>' : '';
         trainList.innerHTML = `
             <tr>
                 <td colspan="6">
                     <div class="empty-state">
                         <h3>No trains scheduled</h3>
                         <p>There are no departures from ${fromStation.name}${routeText} in the next ${intervalText}.</p>
+                        ${errorNote}
                     </div>
                 </td>
             </tr>
