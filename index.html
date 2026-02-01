@@ -10,36 +10,57 @@
     <div class="container">
         <header>
             <h1>UK Train Times</h1>
-            <div class="station-selector">
-                <div class="route-inputs">
-                    <div class="station-input-group">
-                        <label for="from-station-search">From:</label>
-                        <div class="search-container">
-                            <input type="text"
-                                   id="from-station-search"
-                                   placeholder="Departure station..."
-                                   autocomplete="off">
-                            <div id="from-search-results" class="search-results"></div>
-                        </div>
-                        <span class="selected-station" id="from-station-display">Stoneleigh (SNL)</span>
+        </header>
+
+        <div class="commute-section">
+            <div class="section-label">Stoneleigh ↔ Waterloo</div>
+            <div class="commute-panels">
+                <div class="commute-panel">
+                    <div class="panel-header">Stoneleigh → Waterloo</div>
+                    <div class="panel-trains" id="snl-wat-trains">
+                        <div class="panel-loading">Loading...</div>
                     </div>
-                    <div class="swap-button-container">
-                        <button id="swap-stations" class="swap-btn" title="Swap stations">⇄</button>
-                    </div>
-                    <div class="station-input-group">
-                        <label for="to-station-search">To:</label>
-                        <div class="search-container">
-                            <input type="text"
-                                   id="to-station-search"
-                                   placeholder="Arrival station (optional)..."
-                                   autocomplete="off">
-                            <div id="to-search-results" class="search-results"></div>
-                        </div>
-                        <span class="selected-station" id="to-station-display">London Waterloo (WAT)</span>
+                </div>
+                <div class="commute-panel">
+                    <div class="panel-header">Waterloo → Stoneleigh</div>
+                    <div class="panel-trains" id="wat-snl-trains">
+                        <div class="panel-loading">Loading...</div>
                     </div>
                 </div>
             </div>
-        </header>
+        </div>
+
+        <hr class="section-divider">
+
+        <div class="station-selector">
+            <div class="route-inputs">
+                <div class="station-input-group">
+                    <label for="from-station-search">From:</label>
+                    <div class="search-container">
+                        <input type="text"
+                               id="from-station-search"
+                               placeholder="Departure station..."
+                               autocomplete="off">
+                        <div id="from-search-results" class="search-results"></div>
+                    </div>
+                    <span class="selected-station" id="from-station-display">Stoneleigh (SNL)</span>
+                </div>
+                <div class="swap-button-container">
+                    <button id="swap-stations" class="swap-btn" title="Swap stations">⇄</button>
+                </div>
+                <div class="station-input-group">
+                    <label for="to-station-search">To:</label>
+                    <div class="search-container">
+                        <input type="text"
+                               id="to-station-search"
+                               placeholder="Arrival station (optional)..."
+                               autocomplete="off">
+                        <div id="to-search-results" class="search-results"></div>
+                    </div>
+                    <span class="selected-station" id="to-station-display">London Waterloo (WAT)</span>
+                </div>
+            </div>
+        </div>
 
         <hr class="section-divider">
 
@@ -63,26 +84,6 @@
                     <option value="60">1 hour</option>
                     <option value="120" selected>2 hours (max)</option>
                 </select>
-            </div>
-        </div>
-
-        <hr class="section-divider">
-
-        <div class="commute-section">
-            <div class="section-label">Stoneleigh ↔ Waterloo</div>
-            <div class="commute-panels">
-                <div class="commute-panel">
-                    <div class="panel-header">Stoneleigh → Waterloo</div>
-                    <div class="panel-trains" id="snl-wat-trains">
-                        <div class="panel-loading">Loading...</div>
-                    </div>
-                </div>
-                <div class="commute-panel">
-                    <div class="panel-header">Waterloo → Stoneleigh</div>
-                    <div class="panel-trains" id="wat-snl-trains">
-                        <div class="panel-loading">Loading...</div>
-                    </div>
-                </div>
             </div>
         </div>
 
