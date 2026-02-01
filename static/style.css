@@ -36,15 +36,73 @@ header h1 {
     flex-direction: column;
     align-items: center;
     gap: 15px;
+    width: 100%;
+}
+
+.route-inputs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 800px;
+}
+
+.station-input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 250px;
+    max-width: 350px;
+}
+
+.station-input-group label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.selected-station {
+    font-size: 0.95rem;
+    color: #00d4ff;
+    font-weight: 600;
+}
+
+.swap-button-container {
+    display: flex;
+    align-items: center;
+    padding-top: 25px;
+}
+
+.swap-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #3a3a5c;
+    background: rgba(255, 255, 255, 0.1);
+    color: #00d4ff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.swap-btn:hover {
+    border-color: #00d4ff;
+    background: rgba(0, 212, 255, 0.2);
+    transform: rotate(180deg);
 }
 
 .search-container {
     position: relative;
     width: 100%;
-    max-width: 400px;
 }
 
-#station-search {
+#from-station-search,
+#to-station-search {
     width: 100%;
     padding: 12px 20px;
     font-size: 1rem;
@@ -56,11 +114,13 @@ header h1 {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-#station-search::placeholder {
+#from-station-search::placeholder,
+#to-station-search::placeholder {
     color: rgba(255, 255, 255, 0.5);
 }
 
-#station-search:focus {
+#from-station-search:focus,
+#to-station-search:focus {
     border-color: #00d4ff;
     box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
 }
@@ -105,22 +165,19 @@ header h1 {
     margin-right: 10px;
 }
 
-.current-station {
-    font-size: 1.2rem;
+.search-result-item.clear-destination {
+    background: rgba(255, 107, 107, 0.1);
+    border-bottom: 2px solid rgba(255, 107, 107, 0.3);
 }
 
-.current-station .label {
-    color: rgba(255, 255, 255, 0.6);
+.search-result-item.clear-destination .code {
+    color: #ff6b6b;
 }
 
-.current-station .station-name {
-    font-weight: bold;
-    color: #00d4ff;
+.search-result-item.clear-destination:hover {
+    background: rgba(255, 107, 107, 0.2);
 }
 
-.current-station .station-code {
-    color: rgba(255, 255, 255, 0.5);
-}
 
 .controls {
     display: flex;
@@ -339,6 +396,20 @@ footer {
 @media (max-width: 768px) {
     header h1 {
         font-size: 1.8rem;
+    }
+
+    .route-inputs {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .station-input-group {
+        min-width: 100%;
+    }
+
+    .swap-button-container {
+        padding-top: 0;
+        transform: rotate(90deg);
     }
 
     .train-board th,

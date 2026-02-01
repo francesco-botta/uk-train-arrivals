@@ -11,17 +11,32 @@
         <header>
             <h1>UK Train Times</h1>
             <div class="station-selector">
-                <div class="search-container">
-                    <input type="text"
-                           id="station-search"
-                           placeholder="Search for a station..."
-                           autocomplete="off">
-                    <div id="search-results" class="search-results"></div>
-                </div>
-                <div class="current-station">
-                    <span class="label">Current Station:</span>
-                    <span id="current-station-name" class="station-name">King's Cross</span>
-                    <span class="station-code">(KGX)</span>
+                <div class="route-inputs">
+                    <div class="station-input-group">
+                        <label for="from-station-search">From:</label>
+                        <div class="search-container">
+                            <input type="text"
+                                   id="from-station-search"
+                                   placeholder="Departure station..."
+                                   autocomplete="off">
+                            <div id="from-search-results" class="search-results"></div>
+                        </div>
+                        <span class="selected-station" id="from-station-display">King's Cross (KGX)</span>
+                    </div>
+                    <div class="swap-button-container">
+                        <button id="swap-stations" class="swap-btn" title="Swap stations">⇄</button>
+                    </div>
+                    <div class="station-input-group">
+                        <label for="to-station-search">To:</label>
+                        <div class="search-container">
+                            <input type="text"
+                                   id="to-station-search"
+                                   placeholder="Arrival station (optional)..."
+                                   autocomplete="off">
+                            <div id="to-search-results" class="search-results"></div>
+                        </div>
+                        <span class="selected-station" id="to-station-display">Any destination</span>
+                    </div>
                 </div>
             </div>
         </header>

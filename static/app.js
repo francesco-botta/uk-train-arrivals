@@ -2,25 +2,28 @@
 const HUXLEY_BASE_URL = 'https://huxley2.azurewebsites.net';
 
 // Current state
-let currentStation = 'KGX';
-let currentStationNameText = 'King\'s Cross';
+let fromStation = { code: 'KGX', name: 'King\'s Cross' };
+let toStation = { code: null, name: null }; // null means "any destination"
 let currentTab = 'departures';
 let currentTimeInterval = 120; // Time window in minutes (max 120 per API limit)
-let currentRouteFilter = null; // { from: 'SNL', to: 'WAT' } for route-specific tabs
 let refreshInterval;
 let countdownInterval;
 let countdown = 15;
 
-// Route definitions
+// Route definitions for quick tabs
 const ROUTES = {
     'snl-to-wat': { from: 'SNL', fromName: 'Stoneleigh', to: 'WAT', toName: 'London Waterloo' },
     'wat-to-snl': { from: 'WAT', fromName: 'London Waterloo', to: 'SNL', toName: 'Stoneleigh' }
 };
 
 // DOM elements
-const stationSearch = document.getElementById('station-search');
-const searchResults = document.getElementById('search-results');
-const currentStationName = document.getElementById('current-station-name');
+const fromStationSearch = document.getElementById('from-station-search');
+const fromSearchResults = document.getElementById('from-search-results');
+const fromStationDisplay = document.getElementById('from-station-display');
+const toStationSearch = document.getElementById('to-station-search');
+const toSearchResults = document.getElementById('to-search-results');
+const toStationDisplay = document.getElementById('to-station-display');
+const swapBtn = document.getElementById('swap-stations');
 const trainList = document.getElementById('train-list');
 const loadingEl = document.getElementById('loading');
 const errorEl = document.getElementById('error');
@@ -33,14 +36,18 @@ const timeIntervalSelect = document.getElementById('time-interval');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Check URL for station parameter
+    // Check URL for station parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const stationParam = urlParams.get('station');
-    if (stationParam) {
-        currentStation = stationParam.toUpperCase();
-        currentStationNameText = getStationName(currentStation);
-        currentStationName.textContent = currentStationNameText;
-        document.querySelector('.station-code').textContent = `(${currentStation})`;
+    const fromParam = urlParams.get('from');
+    const toParam = urlParams.get('to');
+
+    if (fromParam) {
+        fromStation = { code: fromParam.toUpperCase(), name: getStationName(fromParam.toUpperCase()) };
+        updateFromStationDisplay();
+    }
+    if (toParam) {
+        toStation = { code: toParam.toUpperCase(), name: getStationName(toParam.toUpperCase()) };
+        updateToStationDisplay();
     }
 
     loadTrains();
@@ -48,27 +55,76 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
 });
 
+function updateFromStationDisplay() {
+    fromStationDisplay.textContent = `${fromStation.name} (${fromStation.code})`;
+}
+
+function updateToStationDisplay() {
+    if (toStation.code) {
+        toStationDisplay.textContent = `${toStation.name} (${toStation.code})`;
+    } else {
+        toStationDisplay.textContent = 'Any destination';
+    }
+}
+
 function setupEventListeners() {
-    // Station search
-    let searchTimeout;
-    stationSearch.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
+    // From station search
+    let fromSearchTimeout;
+    fromStationSearch.addEventListener('input', (e) => {
+        clearTimeout(fromSearchTimeout);
         const query = e.target.value.trim();
 
         if (query.length < 2) {
-            searchResults.classList.remove('active');
+            fromSearchResults.classList.remove('active');
             return;
         }
 
-        searchTimeout = setTimeout(() => {
-            displaySearchResults(query);
+        fromSearchTimeout = setTimeout(() => {
+            displaySearchResults(query, fromSearchResults, 'from');
+        }, 300);
+    });
+
+    // To station search
+    let toSearchTimeout;
+    toStationSearch.addEventListener('input', (e) => {
+        clearTimeout(toSearchTimeout);
+        const query = e.target.value.trim();
+
+        if (query.length < 2) {
+            toSearchResults.classList.remove('active');
+            return;
+        }
+
+        toSearchTimeout = setTimeout(() => {
+            displaySearchResults(query, toSearchResults, 'to');
         }, 300);
     });
 
     // Close search results when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-container')) {
-            searchResults.classList.remove('active');
+            fromSearchResults.classList.remove('active');
+            toSearchResults.classList.remove('active');
+        }
+    });
+
+    // Swap stations button
+    swapBtn.addEventListener('click', () => {
+        // Only swap if we have a "to" station
+        if (toStation.code) {
+            const temp = { ...fromStation };
+            fromStation = { ...toStation };
+            toStation = temp;
+            updateFromStationDisplay();
+            updateToStationDisplay();
+            updateURL();
+
+            // Clear route tab selection
+            currentTab = 'departures';
+            tabBtns.forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-tab="departures"]').classList.add('active');
+
+            loadTrains();
         }
     });
 
@@ -82,15 +138,13 @@ function setupEventListeners() {
             // Handle route-specific tabs
             if (ROUTES[currentTab]) {
                 const route = ROUTES[currentTab];
-                currentRouteFilter = { from: route.from, to: route.to, toName: route.toName };
-                currentStation = route.from;
-                currentStationNameText = route.fromName;
-                currentStationName.textContent = route.fromName;
-                document.querySelector('.station-code').textContent = `(${route.from})`;
-            } else {
-                currentRouteFilter = null;
+                fromStation = { code: route.from, name: route.fromName };
+                toStation = { code: route.to, name: route.toName };
+                updateFromStationDisplay();
+                updateToStationDisplay();
             }
 
+            updateURL();
             loadTrains();
         });
     });
@@ -106,56 +160,112 @@ function setupEventListeners() {
         currentTimeInterval = parseInt(e.target.value, 10);
         loadTrains();
     });
+
+    // Allow clearing "to" station by pressing Escape or clearing the field
+    toStationSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            toStation = { code: null, name: null };
+            toStationSearch.value = '';
+            updateToStationDisplay();
+            toSearchResults.classList.remove('active');
+            updateURL();
+            loadTrains();
+        }
+    });
 }
 
-function displaySearchResults(query) {
+function displaySearchResults(query, resultsContainer, type) {
     const stations = searchStations(query);
 
     if (stations.length === 0) {
-        searchResults.innerHTML = '<div class="search-result-item">No stations found</div>';
+        resultsContainer.innerHTML = '<div class="search-result-item">No stations found</div>';
     } else {
-        searchResults.innerHTML = stations.map(station =>
+        // Add "Clear" option for "to" station
+        let html = '';
+        if (type === 'to') {
+            html = `<div class="search-result-item clear-destination" data-code="">
+                <span class="code">✕</span>
+                <span class="name">Clear destination (show all)</span>
+            </div>`;
+        }
+
+        html += stations.map(station =>
             `<div class="search-result-item" data-code="${station.code}">
                 <span class="code">${station.code}</span>
                 <span class="name">${station.name}</span>
             </div>`
         ).join('');
 
+        resultsContainer.innerHTML = html;
+
         // Add click handlers
-        searchResults.querySelectorAll('.search-result-item[data-code]').forEach(item => {
+        resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
             item.addEventListener('click', () => {
-                selectStation(item.dataset.code, item.querySelector('.name').textContent);
+                const code = item.dataset.code;
+                if (type === 'from') {
+                    if (code) {
+                        selectFromStation(code, item.querySelector('.name').textContent);
+                    }
+                } else {
+                    if (code) {
+                        selectToStation(code, item.querySelector('.name').textContent);
+                    } else {
+                        // Clear destination
+                        toStation = { code: null, name: null };
+                        toStationSearch.value = '';
+                        updateToStationDisplay();
+                        updateURL();
+                        loadTrains();
+                    }
+                }
+                resultsContainer.classList.remove('active');
             });
         });
     }
 
-    searchResults.classList.add('active');
+    resultsContainer.classList.add('active');
 }
 
-function selectStation(code, name) {
-    currentStation = code;
-    currentStationNameText = name;
-    currentStationName.textContent = name;
-    document.querySelector('.station-code').textContent = `(${code})`;
-    stationSearch.value = '';
-    searchResults.classList.remove('active');
+function selectFromStation(code, name) {
+    fromStation = { code, name };
+    fromStationSearch.value = '';
+    updateFromStationDisplay();
 
-    // Clear route filter and switch to departures tab
-    currentRouteFilter = null;
+    // Clear route tab selection
     currentTab = 'departures';
     tabBtns.forEach(b => b.classList.remove('active'));
     document.querySelector('[data-tab="departures"]').classList.add('active');
 
-    // Update URL
-    const url = new URL(window.location);
-    url.searchParams.set('station', code);
-    window.history.pushState({}, '', url);
-
-    // Update page title
+    updateURL();
     document.title = `UK Train Times - ${name}`;
-
     loadTrains();
     resetCountdown();
+}
+
+function selectToStation(code, name) {
+    toStation = { code, name };
+    toStationSearch.value = '';
+    updateToStationDisplay();
+
+    // Clear route tab selection
+    currentTab = 'departures';
+    tabBtns.forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-tab="departures"]').classList.add('active');
+
+    updateURL();
+    loadTrains();
+    resetCountdown();
+}
+
+function updateURL() {
+    const url = new URL(window.location);
+    url.searchParams.set('from', fromStation.code);
+    if (toStation.code) {
+        url.searchParams.set('to', toStation.code);
+    } else {
+        url.searchParams.delete('to');
+    }
+    window.history.pushState({}, '', url);
 }
 
 async function fetchDeparturesChunk(stationCode, timeOffset, timeWindow, filterTo = null) {
@@ -203,7 +313,7 @@ async function loadTrains() {
 
     try {
         const timeWindow = Math.min(Math.max(currentTimeInterval, 1), 120);
-        const filterTo = currentRouteFilter ? currentRouteFilter.to : null;
+        const filterTo = toStation.code;
 
         // Make multiple requests with different time offsets to get more trains
         const chunkSize = 30;
@@ -217,7 +327,7 @@ async function loadTrains() {
             const window = Math.min(chunkSize, timeWindow - offset);
 
             try {
-                const data = await fetchDeparturesChunk(currentStation, offset, window, filterTo);
+                const data = await fetchDeparturesChunk(fromStation.code, offset, window, filterTo);
 
                 if (!generatedAt) {
                     generatedAt = data.generatedAt || '';
@@ -286,15 +396,15 @@ function renderTrains(services) {
         const intervalText = currentTimeInterval >= 60
             ? `${currentTimeInterval / 60} hour${currentTimeInterval > 60 ? 's' : ''}`
             : `${currentTimeInterval} minutes`;
-        const routeText = currentRouteFilter
-            ? ` to ${currentRouteFilter.toName}`
+        const routeText = toStation.code
+            ? ` to ${toStation.name}`
             : '';
         trainList.innerHTML = `
             <tr>
                 <td colspan="6">
                     <div class="empty-state">
                         <h3>No trains scheduled</h3>
-                        <p>There are no departures${routeText} in the next ${intervalText}.</p>
+                        <p>There are no departures from ${fromStation.name}${routeText} in the next ${intervalText}.</p>
                     </div>
                 </td>
             </tr>
@@ -486,12 +596,18 @@ function resetCountdown() {
 // Handle browser back/forward
 window.addEventListener('popstate', () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const station = urlParams.get('station') || 'KGX';
-    if (station !== currentStation) {
-        currentStation = station;
-        currentStationNameText = getStationName(station);
-        currentStationName.textContent = currentStationNameText;
-        document.querySelector('.station-code').textContent = `(${station})`;
-        loadTrains();
+    const fromParam = urlParams.get('from') || 'KGX';
+    const toParam = urlParams.get('to');
+
+    fromStation = { code: fromParam.toUpperCase(), name: getStationName(fromParam.toUpperCase()) };
+    updateFromStationDisplay();
+
+    if (toParam) {
+        toStation = { code: toParam.toUpperCase(), name: getStationName(toParam.toUpperCase()) };
+    } else {
+        toStation = { code: null, name: null };
     }
+    updateToStationDisplay();
+
+    loadTrains();
 });
