@@ -365,6 +365,124 @@ header h1 {
     font-size: 0.95rem;
 }
 
+/* Commute Section */
+.commute-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 25px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+.commute-panels {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.commute-panel {
+    flex: 1;
+    min-width: 280px;
+    max-width: 450px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.panel-header {
+    background: linear-gradient(90deg, rgba(0, 212, 255, 0.2), rgba(123, 44, 191, 0.2));
+    padding: 12px 15px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-trains {
+    padding: 10px;
+    min-height: 150px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.panel-loading {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 20px;
+}
+
+.panel-train-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+}
+
+.panel-train-item:last-child {
+    border-bottom: none;
+}
+
+.panel-train-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.panel-train-time {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+.panel-train-expected {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-left: 8px;
+}
+
+.panel-train-expected.delayed {
+    color: #ffc107;
+}
+
+.panel-train-expected.on-time {
+    color: #00ff88;
+}
+
+.panel-train-expected.cancelled {
+    color: #ff6b6b;
+}
+
+.panel-train-platform {
+    background: rgba(0, 212, 255, 0.2);
+    color: #00d4ff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.panel-no-trains {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 30px 15px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .commute-panels {
+        flex-direction: column;
+    }
+
+    .commute-panel {
+        max-width: 100%;
+    }
+}
 
 .board-container {
     background: rgba(255, 255, 255, 0.05);

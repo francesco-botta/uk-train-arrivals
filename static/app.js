@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadTrains();
+    loadCommutePanels();
     startAutoRefresh();
     setupEventListeners();
 });
@@ -183,6 +184,7 @@ function setupEventListeners() {
     // Manual refresh
     refreshBtn.addEventListener('click', () => {
         loadTrains();
+        loadCommutePanels();
         resetCountdown();
     });
 
@@ -716,6 +718,7 @@ function updateLastUpdated(timestamp) {
 function startAutoRefresh() {
     refreshInterval = setInterval(() => {
         loadTrains();
+        loadCommutePanels();
         resetCountdown();
     }, 60000);
 
@@ -751,3 +754,70 @@ window.addEventListener('popstate', () => {
 
     loadTrains();
 });
+
+// Commute Panels - Stoneleigh <-> Waterloo
+const snlWatTrains = document.getElementById('snl-wat-trains');
+const watSnlTrains = document.getElementById('wat-snl-trains');
+
+async function loadCommutePanels() {
+    await Promise.all([
+        loadCommutePanel('SNL', 'WAT', snlWatTrains),
+        loadCommutePanel('WAT', 'SNL', watSnlTrains)
+    ]);
+}
+
+async function loadCommutePanel(fromCode, toCode, container) {
+    try {
+        const response = await fetch(
+            `${HUXLEY_BASE_URL}/departures/${fromCode}/to/${toCode}/10?expand=true&timeOffset=0&timeWindow=120`
+        );
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const services = data.trainServices || [];
+
+        if (services.length === 0) {
+            container.innerHTML = '<div class="panel-no-trains">No trains scheduled</div>';
+            return;
+        }
+
+        container.innerHTML = services.slice(0, 6).map(service => {
+            const time = service.std || '-';
+            const expected = service.etd || '';
+            const platform = service.platform || '-';
+
+            let expectedClass = '';
+            let expectedText = '';
+
+            if (service.isCancelled) {
+                expectedClass = 'cancelled';
+                expectedText = 'Cancelled';
+            } else if (expected === 'On time') {
+                expectedClass = 'on-time';
+                expectedText = 'On time';
+            } else if (expected && expected !== time) {
+                expectedClass = 'delayed';
+                expectedText = `Exp ${expected}`;
+            } else {
+                expectedClass = 'on-time';
+                expectedText = 'On time';
+            }
+
+            return `
+                <div class="panel-train-item">
+                    <div>
+                        <span class="panel-train-time">${time}</span>
+                        <span class="panel-train-expected ${expectedClass}">${expectedText}</span>
+                    </div>
+                    <span class="panel-train-platform">Plat ${platform}</span>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        container.innerHTML = `<div class="panel-no-trains">Error loading trains</div>`;
+    }
+}
