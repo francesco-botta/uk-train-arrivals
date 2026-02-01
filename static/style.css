@@ -210,17 +210,17 @@ header h1 {
 
 .controls {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    gap: 30px;
+    gap: 20px;
     margin-bottom: 20px;
-    flex-wrap: wrap;
 }
 
 .tabs {
     display: flex;
     justify-content: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .time-filter {
@@ -306,8 +306,7 @@ header h1 {
     align-items: center;
     justify-content: center;
     gap: 15px;
-    margin-top: 15px;
-    padding: 15px 20px;
+    padding: 15px 25px;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);

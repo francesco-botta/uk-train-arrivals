@@ -8,7 +8,7 @@ let currentTab = 'snl-to-wat';
 let currentTimeInterval = 120; // Time window in minutes (max 120 per API limit)
 let refreshInterval;
 let countdownInterval;
-let countdown = 30;
+let countdown = 60;
 
 // Route definitions for quick tabs
 const ROUTES = {
@@ -717,7 +717,7 @@ function startAutoRefresh() {
     refreshInterval = setInterval(() => {
         loadTrains();
         resetCountdown();
-    }, 30000);
+    }, 60000);
 
     countdownInterval = setInterval(() => {
         countdown--;
@@ -729,7 +729,7 @@ function startAutoRefresh() {
 }
 
 function resetCountdown() {
-    countdown = 30;
+    countdown = 60;
     countdownEl.textContent = countdown;
 }
 
