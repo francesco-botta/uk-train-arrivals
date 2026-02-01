@@ -36,6 +36,8 @@ const lastUpdatedEl = document.getElementById('last-updated');
 const refreshBtn = document.getElementById('refresh-btn');
 const tabBtns = document.querySelectorAll('.tab-btn');
 const timeIntervalSelect = document.getElementById('time-interval');
+const dateSelect = document.getElementById('date-select');
+const dateLimitationNotice = document.getElementById('date-limitation-notice');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -53,11 +55,42 @@ document.addEventListener('DOMContentLoaded', () => {
         updateToStationDisplay();
     }
 
+    // Initialize date selector to today
+    initializeDateSelector();
+
     loadTrains();
     loadCommutePanels();
     startAutoRefresh();
     setupEventListeners();
 });
+
+function initializeDateSelector() {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    dateSelect.value = todayStr;
+    dateSelect.min = todayStr; // Can't select past dates
+
+    // Set max to 14 days from now (to show limitation more clearly)
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + 14);
+    dateSelect.max = maxDate.toISOString().split('T')[0];
+}
+
+function isToday(dateString) {
+    const today = new Date().toISOString().split('T')[0];
+    return dateString === today;
+}
+
+function checkDateSelection() {
+    const selectedDate = dateSelect.value;
+    if (!isToday(selectedDate)) {
+        dateLimitationNotice.style.display = 'flex';
+        return false;
+    } else {
+        dateLimitationNotice.style.display = 'none';
+        return true;
+    }
+}
 
 function updateFromStationDisplay() {
     if (fromStation.code) {
@@ -192,6 +225,11 @@ function setupEventListeners() {
     timeIntervalSelect.addEventListener('change', (e) => {
         currentTimeInterval = parseInt(e.target.value, 10);
         loadTrains();
+    });
+
+    // Date selector
+    dateSelect.addEventListener('change', () => {
+        checkDateSelection();
     });
 
     // Allow clearing "to" station by pressing Escape or clearing the field

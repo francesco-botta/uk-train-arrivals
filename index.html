@@ -85,6 +85,16 @@
                     <option value="120" selected>2 hours (max)</option>
                 </select>
             </div>
+
+            <div class="date-filter">
+                <label for="date-select">Date:</label>
+                <input type="date" id="date-select">
+            </div>
+        </div>
+
+        <div id="date-limitation-notice" class="limitation-notice" style="display: none;">
+            <span class="notice-icon">ℹ️</span>
+            <span class="notice-text">Future date timetables are not available. The train data API only provides real-time information for today, up to 2 hours ahead.</span>
         </div>
 
         <div class="board-container">
@@ -118,7 +128,7 @@
         </footer>
     </div>
 
-    <script src="static/stations.js?v=2"></script>
-    <script src="static/app.js?v=2"></script>
+    <script src="static/stations.js?v=3"></script>
+    <script src="static/app.js?v=3"></script>
 </body>
 </html>
