@@ -8,7 +8,7 @@ let currentTab = 'snl-to-wat';
 let currentTimeInterval = 120; // Time window in minutes (max 120 per API limit)
 let refreshInterval;
 let countdownInterval;
-let countdown = 15;
+let countdown = 30;
 
 // Route definitions for quick tabs
 const ROUTES = {
@@ -149,7 +149,7 @@ function setupEventListeners() {
                 updateURL();
                 loadTrains();
             } else if (currentTab === 'departures') {
-                // Custom route - prompt user to select stations
+                // Station departures - prompt user to select a departure station
                 fromStation = { code: null, name: null };
                 toStation = { code: null, name: null };
                 updateFromStationDisplay();
@@ -157,7 +157,7 @@ function setupEventListeners() {
 
                 // Focus on the from station search and show prompt
                 fromStationSearch.focus();
-                fromStationSearch.placeholder = 'Type to search for departure station...';
+                fromStationSearch.placeholder = 'Type to search for a station...';
 
                 // Show prompt in the train list
                 trainBoard.style.display = 'table';
@@ -166,8 +166,8 @@ function setupEventListeners() {
                     <tr>
                         <td colspan="6">
                             <div class="empty-state">
-                                <h3>Select Your Route</h3>
-                                <p>Use the search fields above to select a departure station and optionally an arrival station.</p>
+                                <h3>Select a Station</h3>
+                                <p>Search for a station above to see all departures.</p>
                             </div>
                         </td>
                     </tr>
@@ -259,8 +259,10 @@ function selectFromStation(code, name) {
     fromStationSearch.placeholder = 'Departure station...';
     updateFromStationDisplay();
 
-    // Switch to custom route tab
+    // Switch to Station Departures tab and clear "to" station
     currentTab = 'departures';
+    toStation = { code: null, name: null };
+    updateToStationDisplay();
     tabBtns.forEach(b => b.classList.remove('active'));
     document.querySelector('[data-tab="departures"]').classList.add('active');
 
@@ -343,8 +345,8 @@ async function loadTrains() {
             <tr>
                 <td colspan="6">
                     <div class="empty-state">
-                        <h3>Select Your Route</h3>
-                        <p>Use the search fields above to select a departure station and optionally an arrival station.</p>
+                        <h3>Select a Station</h3>
+                        <p>Search for a station above to see all departures.</p>
                     </div>
                 </td>
             </tr>
@@ -622,7 +624,7 @@ function startAutoRefresh() {
     refreshInterval = setInterval(() => {
         loadTrains();
         resetCountdown();
-    }, 15000);
+    }, 30000);
 
     countdownInterval = setInterval(() => {
         countdown--;
@@ -634,7 +636,7 @@ function startAutoRefresh() {
 }
 
 function resetCountdown() {
-    countdown = 15;
+    countdown = 30;
     countdownEl.textContent = countdown;
 }
 
