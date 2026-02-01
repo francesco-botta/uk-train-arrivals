@@ -300,19 +300,54 @@ header h1 {
     border-color: transparent;
 }
 
-/* Custom route tab */
-.tab-btn.custom-route {
-    border-color: #9f7a4a;
+/* Station Departures Section */
+.station-departures-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-wrap: wrap;
 }
 
-.tab-btn.custom-route:hover {
+.station-departures-section .section-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+}
+
+.station-departures-section .departures-search {
+    max-width: 280px;
+}
+
+.station-departures-section #departures-station-search {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border: 2px solid rgba(159, 122, 74, 0.4);
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.station-departures-section #departures-station-search::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.station-departures-section #departures-station-search:focus {
     border-color: #cfaa6f;
-    background: rgba(159, 122, 74, 0.2);
+    box-shadow: 0 0 15px rgba(159, 122, 74, 0.3);
 }
 
-.tab-btn.custom-route.active {
-    background: linear-gradient(90deg, #9f7a4a, #7a5a2d);
-    border-color: transparent;
+.selected-departure-station {
+    color: #cfaa6f;
+    font-weight: 600;
+    font-size: 0.95rem;
 }
 
 .board-container {

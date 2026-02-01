@@ -24,6 +24,9 @@ const toStationSearch = document.getElementById('to-station-search');
 const toSearchResults = document.getElementById('to-search-results');
 const toStationDisplay = document.getElementById('to-station-display');
 const swapBtn = document.getElementById('swap-stations');
+const departuresStationSearch = document.getElementById('departures-station-search');
+const departuresSearchResults = document.getElementById('departures-search-results');
+const departuresStationDisplay = document.getElementById('departures-station-display');
 const trainList = document.getElementById('train-list');
 const loadingEl = document.getElementById('loading');
 const errorEl = document.getElementById('error');
@@ -104,11 +107,28 @@ function setupEventListeners() {
         }, 300);
     });
 
+    // Departures station search (for viewing all departures from any station)
+    let departuresSearchTimeout;
+    departuresStationSearch.addEventListener('input', (e) => {
+        clearTimeout(departuresSearchTimeout);
+        const query = e.target.value.trim();
+
+        if (query.length < 2) {
+            departuresSearchResults.classList.remove('active');
+            return;
+        }
+
+        departuresSearchTimeout = setTimeout(() => {
+            displayDeparturesSearchResults(query);
+        }, 300);
+    });
+
     // Close search results when clicking outside
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-container')) {
+        if (!e.target.closest('.search-container') && !e.target.closest('.departures-search')) {
             fromSearchResults.classList.remove('active');
             toSearchResults.classList.remove('active');
+            departuresSearchResults.classList.remove('active');
         }
     });
 
@@ -123,10 +143,13 @@ function setupEventListeners() {
             updateToStationDisplay();
             updateURL();
 
-            // Clear route tab selection
-            currentTab = 'departures';
+            // Clear route tab selection since we're now on a custom route
+            currentTab = 'custom';
             tabBtns.forEach(b => b.classList.remove('active'));
-            document.querySelector('[data-tab="departures"]').classList.add('active');
+
+            // Clear departures station display since we're using the from/to fields
+            departuresStationDisplay.textContent = '';
+            departuresStationSearch.value = '';
 
             loadTrains();
         }
@@ -147,41 +170,12 @@ function setupEventListeners() {
                 updateFromStationDisplay();
                 updateToStationDisplay();
                 updateURL();
+
+                // Clear departures station display since we're using a route tab
+                departuresStationDisplay.textContent = '';
+                departuresStationSearch.value = '';
+
                 loadTrains();
-            } else if (currentTab === 'departures') {
-                // Station departures - prompt user to select a departure station
-                fromStation = { code: null, name: null };
-                toStation = { code: null, name: null };
-                updateFromStationDisplay();
-                updateToStationDisplay();
-                updateURL();
-
-                // Focus on the from station search and show prompt
-                fromStationSearch.value = '';
-                fromStationSearch.placeholder = 'Type station name or code...';
-
-                // Use setTimeout to ensure focus works after DOM updates
-                setTimeout(() => {
-                    fromStationSearch.focus();
-                    // Add highlight effect
-                    fromStationSearch.classList.add('highlight');
-                    setTimeout(() => fromStationSearch.classList.remove('highlight'), 2000);
-                }, 100);
-
-                // Show prompt in the train list
-                trainBoard.style.display = 'table';
-                loadingEl.style.display = 'none';
-                errorEl.style.display = 'none';
-                trainList.innerHTML = `
-                    <tr>
-                        <td colspan="6">
-                            <div class="empty-state">
-                                <h3>Select a Station</h3>
-                                <p>Type in the "From" field above to search for a station and see all departures.</p>
-                            </div>
-                        </td>
-                    </tr>
-                `;
             }
         });
     });
@@ -263,16 +257,70 @@ function displaySearchResults(query, resultsContainer, type) {
     resultsContainer.classList.add('active');
 }
 
+function displayDeparturesSearchResults(query) {
+    const stations = searchStations(query);
+
+    if (stations.length === 0) {
+        departuresSearchResults.innerHTML = '<div class="search-result-item">No stations found</div>';
+    } else {
+        departuresSearchResults.innerHTML = stations.map(station =>
+            `<div class="search-result-item" data-code="${station.code}">
+                <span class="code">${station.code}</span>
+                <span class="name">${station.name}</span>
+            </div>`
+        ).join('');
+
+        // Add click handlers
+        departuresSearchResults.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const code = item.dataset.code;
+                if (code) {
+                    selectDeparturesStation(code, item.querySelector('.name').textContent);
+                }
+                departuresSearchResults.classList.remove('active');
+            });
+        });
+    }
+
+    departuresSearchResults.classList.add('active');
+}
+
+function selectDeparturesStation(code, name) {
+    // Set the station for departures
+    fromStation = { code, name };
+    toStation = { code: null, name: null };
+
+    // Update displays
+    departuresStationSearch.value = '';
+    departuresStationDisplay.textContent = `${name} (${code})`;
+
+    // Clear the from/to displays to show we're using the departures section
+    fromStationDisplay.textContent = 'Select a station...';
+    toStationDisplay.textContent = 'Any destination';
+
+    // Clear route tab selection
+    currentTab = 'station-departures';
+    tabBtns.forEach(b => b.classList.remove('active'));
+
+    updateURL();
+    document.title = `UK Train Times - ${name} Departures`;
+    loadTrains();
+    resetCountdown();
+}
+
 function selectFromStation(code, name) {
     fromStation = { code, name };
     fromStationSearch.value = '';
     fromStationSearch.placeholder = 'Departure station...';
     updateFromStationDisplay();
 
-    // Switch to Station Departures tab (keep "to" station if set)
-    currentTab = 'departures';
+    // Clear route tab selection since we're using a custom route
+    currentTab = 'custom';
     tabBtns.forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-tab="departures"]').classList.add('active');
+
+    // Clear departures station display
+    departuresStationDisplay.textContent = '';
+    departuresStationSearch.value = '';
 
     updateURL();
     document.title = `UK Train Times - ${name}`;
@@ -285,10 +333,13 @@ function selectToStation(code, name) {
     toStationSearch.value = '';
     updateToStationDisplay();
 
-    // Switch to Station Departures tab
-    currentTab = 'departures';
+    // Clear route tab selection since we're using a custom route
+    currentTab = 'custom';
     tabBtns.forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-tab="departures"]').classList.add('active');
+
+    // Clear departures station display
+    departuresStationDisplay.textContent = '';
+    departuresStationSearch.value = '';
 
     // If no "from" station selected, prompt user to select one
     if (!fromStation.code) {
