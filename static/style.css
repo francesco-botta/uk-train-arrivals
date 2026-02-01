@@ -314,6 +314,13 @@ header h1 {
     border-color: transparent;
 }
 
+/* Section Label (shared style) */
+.section-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
 /* Station Departures Section */
 .station-departures-section {
     display: flex;
@@ -325,11 +332,6 @@ header h1 {
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     flex-wrap: wrap;
-}
-
-.station-departures-section .section-label {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.9rem;
 }
 
 .station-departures-section .departures-search {
@@ -374,11 +376,6 @@ header h1 {
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     flex-wrap: wrap;
-}
-
-.quick-routes-section .section-label {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.9rem;
 }
 
 .board-container {
