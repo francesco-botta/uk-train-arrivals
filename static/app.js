@@ -1,5 +1,9 @@
+// Huxley2 API base URL
+const HUXLEY_BASE_URL = 'https://huxley2.azurewebsites.net';
+
 // Current state
-let currentStation = STATION_CODE;
+let currentStation = 'KGX';
+let currentStationNameText = 'King\'s Cross';
 let currentTab = 'departures';
 let currentTimeInterval = 120; // Time window in minutes (max 120 per API limit)
 let currentRouteFilter = null; // { from: 'SNL', to: 'WAT' } for route-specific tabs
@@ -29,6 +33,16 @@ const timeIntervalSelect = document.getElementById('time-interval');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    // Check URL for station parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const stationParam = urlParams.get('station');
+    if (stationParam) {
+        currentStation = stationParam.toUpperCase();
+        currentStationNameText = getStationName(currentStation);
+        currentStationName.textContent = currentStationNameText;
+        document.querySelector('.station-code').textContent = `(${currentStation})`;
+    }
+
     loadTrains();
     startAutoRefresh();
     setupEventListeners();
@@ -47,7 +61,7 @@ function setupEventListeners() {
         }
 
         searchTimeout = setTimeout(() => {
-            searchStations(query);
+            displaySearchResults(query);
         }, 300);
     });
 
@@ -70,6 +84,7 @@ function setupEventListeners() {
                 const route = ROUTES[currentTab];
                 currentRouteFilter = { from: route.from, to: route.to, toName: route.toName };
                 currentStation = route.from;
+                currentStationNameText = route.fromName;
                 currentStationName.textContent = route.fromName;
                 document.querySelector('.station-code').textContent = `(${route.from})`;
             } else {
@@ -93,37 +108,33 @@ function setupEventListeners() {
     });
 }
 
-async function searchStations(query) {
-    try {
-        const response = await fetch(`/api/stations?q=${encodeURIComponent(query)}`);
-        const stations = await response.json();
+function displaySearchResults(query) {
+    const stations = searchStations(query);
 
-        if (stations.length === 0) {
-            searchResults.innerHTML = '<div class="search-result-item">No stations found</div>';
-        } else {
-            searchResults.innerHTML = stations.map(station =>
-                `<div class="search-result-item" data-code="${station.code}">
-                    <span class="code">${station.code}</span>
-                    <span class="name">${station.name}</span>
-                </div>`
-            ).join('');
+    if (stations.length === 0) {
+        searchResults.innerHTML = '<div class="search-result-item">No stations found</div>';
+    } else {
+        searchResults.innerHTML = stations.map(station =>
+            `<div class="search-result-item" data-code="${station.code}">
+                <span class="code">${station.code}</span>
+                <span class="name">${station.name}</span>
+            </div>`
+        ).join('');
 
-            // Add click handlers
-            searchResults.querySelectorAll('.search-result-item[data-code]').forEach(item => {
-                item.addEventListener('click', () => {
-                    selectStation(item.dataset.code, item.querySelector('.name').textContent);
-                });
+        // Add click handlers
+        searchResults.querySelectorAll('.search-result-item[data-code]').forEach(item => {
+            item.addEventListener('click', () => {
+                selectStation(item.dataset.code, item.querySelector('.name').textContent);
             });
-        }
-
-        searchResults.classList.add('active');
-    } catch (error) {
-        console.error('Error searching stations:', error);
+        });
     }
+
+    searchResults.classList.add('active');
 }
 
 function selectStation(code, name) {
     currentStation = code;
+    currentStationNameText = name;
     currentStationName.textContent = name;
     document.querySelector('.station-code').textContent = `(${code})`;
     stationSearch.value = '';
@@ -147,27 +158,90 @@ function selectStation(code, name) {
     resetCountdown();
 }
 
+async function fetchDeparturesChunk(stationCode, timeOffset, timeWindow, filterTo = null) {
+    let url;
+    if (filterTo) {
+        url = `${HUXLEY_BASE_URL}/departures/${stationCode.toUpperCase()}/to/${filterTo.toUpperCase()}/50`;
+    } else {
+        url = `${HUXLEY_BASE_URL}/departures/${stationCode.toUpperCase()}/50`;
+    }
+
+    const params = new URLSearchParams({
+        expand: 'true',
+        timeOffset: timeOffset,
+        timeWindow: timeWindow
+    });
+
+    const response = await fetch(`${url}?${params}`);
+    if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+    }
+    return response.json();
+}
+
+function processService(service) {
+    return {
+        serviceId: service.serviceID || service.rsid || '',
+        sta: service.sta || '',
+        eta: service.eta || '',
+        std: service.std || '',
+        etd: service.etd || '',
+        platform: service.platform || '-',
+        origin: service.origin && service.origin[0] ? getStationName(service.origin[0].crs) : '',
+        destination: service.destination && service.destination[0] ? getStationName(service.destination[0].crs) : '',
+        operator: service.operator || '',
+        isCancelled: service.isCancelled || false,
+        cancelReason: service.cancelReason || '',
+        delayReason: service.delayReason || ''
+    };
+}
+
 async function loadTrains() {
     loadingEl.style.display = 'block';
     errorEl.style.display = 'none';
     trainBoard.style.display = 'none';
 
     try {
-        // Build API URL with optional destination filter
-        let apiUrl = `/api/departures/${currentStation}?timeWindow=${currentTimeInterval}`;
-        if (currentRouteFilter) {
-            apiUrl += `&filterTo=${currentRouteFilter.to}`;
+        const timeWindow = Math.min(Math.max(currentTimeInterval, 1), 120);
+        const filterTo = currentRouteFilter ? currentRouteFilter.to : null;
+
+        // Make multiple requests with different time offsets to get more trains
+        const chunkSize = 30;
+        const allServices = {};
+        let generatedAt = null;
+
+        const numChunks = Math.ceil(timeWindow / chunkSize);
+
+        for (let i = 0; i < numChunks; i++) {
+            const offset = i * chunkSize;
+            const window = Math.min(chunkSize, timeWindow - offset);
+
+            try {
+                const data = await fetchDeparturesChunk(currentStation, offset, window, filterTo);
+
+                if (!generatedAt) {
+                    generatedAt = data.generatedAt || '';
+                }
+
+                const trainServices = data.trainServices || [];
+                for (const service of trainServices) {
+                    const processed = processService(service);
+                    const key = processed.serviceId || `${processed.std}_${processed.destination}`;
+                    if (key && !allServices[key]) {
+                        allServices[key] = processed;
+                    }
+                }
+            } catch (e) {
+                console.warn(`Failed to fetch chunk ${i}:`, e);
+            }
         }
 
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+        // Convert to sorted array
+        const services = Object.values(allServices);
+        services.sort((a, b) => (a.std || '99:99').localeCompare(b.std || '99:99'));
 
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        renderTrains(data.services);
-        updateLastUpdated(data.generatedAt);
+        renderTrains(services);
+        updateLastUpdated(generatedAt);
 
         loadingEl.style.display = 'none';
         trainBoard.style.display = 'table';
@@ -179,7 +253,6 @@ async function loadTrains() {
 }
 
 function parseTimeToMinutes(timeStr) {
-    // Parse time string like "14:30" to minutes from midnight
     if (!timeStr || typeof timeStr !== 'string') return null;
     const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
     if (!match) return null;
@@ -187,7 +260,7 @@ function parseTimeToMinutes(timeStr) {
 }
 
 function filterByTimeInterval(services) {
-    if (currentTimeInterval === 0) return services; // All day - no filter
+    if (currentTimeInterval === 0) return services;
 
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -196,11 +269,9 @@ function filterByTimeInterval(services) {
     return services.filter(service => {
         const time = service.std;
         const trainMinutes = parseTimeToMinutes(time);
-        if (trainMinutes === null) return true; // Keep if can't parse
+        if (trainMinutes === null) return true;
 
-        // Handle midnight crossover (e.g., current time 23:00, looking for trains until 01:00)
         if (cutoffMinutes >= 1440) {
-            // Cutoff crosses midnight
             return trainMinutes >= currentMinutes || trainMinutes <= (cutoffMinutes - 1440);
         }
 
@@ -209,7 +280,6 @@ function filterByTimeInterval(services) {
 }
 
 function renderTrains(services) {
-    // Apply time filter
     const filteredServices = filterByTimeInterval(services || []);
 
     if (!filteredServices || filteredServices.length === 0) {
@@ -292,13 +362,11 @@ async function toggleCallingPoints(row) {
 
     if (!callingPointsRow) return;
 
-    // Toggle visibility
     if (callingPointsRow.style.display === 'none') {
         callingPointsRow.style.display = 'table-row';
         expandIcon.textContent = '-';
         row.classList.add('expanded');
 
-        // Fetch calling points if not already loaded
         const container = callingPointsRow.querySelector('.calling-points-container');
         if (container.querySelector('.calling-points-loading')) {
             await fetchCallingPoints(serviceId, container);
@@ -317,20 +385,34 @@ async function fetchCallingPoints(serviceId, container) {
     }
 
     try {
-        const response = await fetch(`/api/service/${encodeURIComponent(serviceId)}?station=${currentStation}`);
+        const response = await fetch(`${HUXLEY_BASE_URL}/service/${encodeURIComponent(serviceId)}?expand=true`);
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
         const data = await response.json();
 
-        if (data.error) {
-            throw new Error(data.error);
+        const callingPoints = [];
+        const subsequent = data.subsequentCallingPoints || [];
+        if (subsequent.length > 0 && subsequent[0].callingPoint) {
+            for (const point of subsequent[0].callingPoint) {
+                callingPoints.push({
+                    station: getStationName(point.crs),
+                    crs: point.crs,
+                    st: point.st || '',
+                    et: point.et || '',
+                    at: point.at || '',
+                    isCancelled: point.isCancelled || false
+                });
+            }
         }
 
-        if (!data.callingPoints || data.callingPoints.length === 0) {
+        if (callingPoints.length === 0) {
             container.innerHTML = '<div class="calling-points-empty">No intermediate stops</div>';
             return;
         }
 
-        const stopsHtml = data.callingPoints.map((point, idx) => {
-            const isLast = idx === data.callingPoints.length - 1;
+        const stopsHtml = callingPoints.map((point, idx) => {
+            const isLast = idx === callingPoints.length - 1;
             let timeDisplay = point.st || '';
             let timeClass = '';
 
@@ -382,13 +464,11 @@ function updateLastUpdated(timestamp) {
 }
 
 function startAutoRefresh() {
-    // Refresh every 15 seconds
     refreshInterval = setInterval(() => {
         loadTrains();
         resetCountdown();
     }, 15000);
 
-    // Countdown timer
     countdownInterval = setInterval(() => {
         countdown--;
         countdownEl.textContent = countdown;
@@ -409,6 +489,9 @@ window.addEventListener('popstate', () => {
     const station = urlParams.get('station') || 'KGX';
     if (station !== currentStation) {
         currentStation = station;
+        currentStationNameText = getStationName(station);
+        currentStationName.textContent = currentStationNameText;
+        document.querySelector('.station-code').textContent = `(${station})`;
         loadTrains();
     }
 });
