@@ -2604,22 +2604,67 @@ const STATIONS = {
 // Get station name from CRS code
 function getStationName(crs) {
     if (!crs) return "";
+    // Handle multi-station codes (comma-separated)
+    if (crs.includes(',')) {
+        const codes = crs.split(',');
+        const firstName = STATIONS[codes[0].toUpperCase()] || codes[0];
+        // Extract location prefix from first station name
+        const prefix = firstName.split(' ')[0];
+        return `All ${prefix} stations`;
+    }
     return STATIONS[crs.toUpperCase()] || crs;
 }
 
 // Search stations by name or code
 function searchStations(query) {
     if (!query || query.length < 2) return [];
-    
+
     const q = query.toLowerCase();
     const results = [];
-    
+
     for (const [code, name] of Object.entries(STATIONS)) {
         if (code.toLowerCase().includes(q) || name.toLowerCase().includes(q)) {
             results.push({ code, name });
         }
-        if (results.length >= 20) break;
+        if (results.length >= 50) break; // Increase limit to find groups
     }
-    
+
     return results.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// Find station groups (locations with multiple stations)
+function findStationGroups(stations) {
+    if (stations.length < 2) return { groups: {}, stations };
+
+    const groups = {};
+    const prefixCounts = {};
+
+    // Common location prefixes to look for
+    const locationPrefixes = [
+        'Heathrow', 'Gatwick', 'Birmingham', 'Manchester', 'Liverpool',
+        'London', 'Edinburgh', 'Glasgow', 'Leeds', 'Sheffield',
+        'Bristol', 'Cardiff', 'Luton', 'Stansted', 'Southampton'
+    ];
+
+    // Count stations by prefix
+    for (const station of stations) {
+        for (const prefix of locationPrefixes) {
+            if (station.name.toLowerCase().startsWith(prefix.toLowerCase())) {
+                if (!prefixCounts[prefix]) {
+                    prefixCounts[prefix] = [];
+                }
+                prefixCounts[prefix].push(station);
+                break;
+            }
+        }
+    }
+
+    // Only create groups for prefixes with 2+ stations
+    for (const [prefix, stationList] of Object.entries(prefixCounts)) {
+        if (stationList.length >= 2) {
+            groups[prefix] = stationList;
+        }
+    }
+
+    return { groups, stations };
 }

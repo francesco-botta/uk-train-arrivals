@@ -207,6 +207,20 @@ header h1 {
     background: rgba(255, 107, 107, 0.2);
 }
 
+.search-result-item.all-stations {
+    background: rgba(0, 212, 255, 0.1);
+    border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+}
+
+.search-result-item.all-stations .code {
+    color: #00d4ff;
+    font-size: 0.75rem;
+}
+
+.search-result-item.all-stations:hover {
+    background: rgba(0, 212, 255, 0.2);
+}
+
 
 /* Section Divider */
 .section-divider {

@@ -213,6 +213,9 @@ function displaySearchResults(query, resultsContainer, type) {
     if (stations.length === 0) {
         resultsContainer.innerHTML = '<div class="search-result-item">No stations found</div>';
     } else {
+        // Find station groups (e.g., "Heathrow" with multiple terminals)
+        const { groups } = findStationGroups(stations);
+
         // Add "Clear" option for "to" station
         let html = '';
         if (type === 'to') {
@@ -222,7 +225,17 @@ function displaySearchResults(query, resultsContainer, type) {
             </div>`;
         }
 
-        html += stations.map(station =>
+        // Add "All stations" options for groups
+        for (const [prefix, groupStations] of Object.entries(groups)) {
+            const codes = groupStations.map(s => s.code).join(',');
+            html += `<div class="search-result-item all-stations" data-code="${codes}">
+                <span class="code">ALL</span>
+                <span class="name">All ${prefix} stations (${groupStations.length})</span>
+            </div>`;
+        }
+
+        // Add individual stations
+        html += stations.slice(0, 15).map(station =>
             `<div class="search-result-item" data-code="${station.code}">
                 <span class="code">${station.code}</span>
                 <span class="name">${station.name}</span>
@@ -265,12 +278,29 @@ function displayDeparturesSearchResults(query) {
     if (stations.length === 0) {
         departuresSearchResults.innerHTML = '<div class="search-result-item">No stations found</div>';
     } else {
-        departuresSearchResults.innerHTML = stations.map(station =>
+        // Find station groups
+        const { groups } = findStationGroups(stations);
+
+        let html = '';
+
+        // Add "All stations" options for groups
+        for (const [prefix, groupStations] of Object.entries(groups)) {
+            const codes = groupStations.map(s => s.code).join(',');
+            html += `<div class="search-result-item all-stations" data-code="${codes}">
+                <span class="code">ALL</span>
+                <span class="name">All ${prefix} stations (${groupStations.length})</span>
+            </div>`;
+        }
+
+        // Add individual stations
+        html += stations.slice(0, 15).map(station =>
             `<div class="search-result-item" data-code="${station.code}">
                 <span class="code">${station.code}</span>
                 <span class="name">${station.name}</span>
             </div>`
         ).join('');
+
+        departuresSearchResults.innerHTML = html;
 
         // Add click handlers
         departuresSearchResults.querySelectorAll('.search-result-item').forEach(item => {
@@ -452,36 +482,47 @@ async function loadTrains() {
         const timeWindow = Math.min(Math.max(currentTimeInterval, 1), 120);
         const filterTo = toStation.code;
 
-        // Make multiple requests with different time offsets to get more trains
-        const chunkSize = 30;
+        // Handle multiple station codes (comma-separated for "All stations" selections)
+        const stationCodes = fromStation.code.includes(',')
+            ? fromStation.code.split(',')
+            : [fromStation.code];
+
         const allServices = {};
         let generatedAt = null;
         let failedChunks = 0;
 
-        const numChunks = Math.ceil(timeWindow / chunkSize);
+        // Fetch from each station
+        for (const stationCode of stationCodes) {
+            const chunkSize = 30;
+            const numChunks = Math.ceil(timeWindow / chunkSize);
 
-        for (let i = 0; i < numChunks; i++) {
-            const offset = i * chunkSize;
-            const window = Math.min(chunkSize, timeWindow - offset);
+            for (let i = 0; i < numChunks; i++) {
+                const offset = i * chunkSize;
+                const window = Math.min(chunkSize, timeWindow - offset);
 
-            try {
-                const data = await fetchDeparturesChunk(fromStation.code, offset, window, filterTo);
+                try {
+                    const data = await fetchDeparturesChunk(stationCode.trim(), offset, window, filterTo);
 
-                if (!generatedAt) {
-                    generatedAt = data.generatedAt || '';
-                }
-
-                const trainServices = data.trainServices || [];
-                for (const service of trainServices) {
-                    const processed = processService(service);
-                    const key = processed.serviceId || `${processed.std}_${processed.destination}`;
-                    if (key && !allServices[key]) {
-                        allServices[key] = processed;
+                    if (!generatedAt) {
+                        generatedAt = data.generatedAt || '';
                     }
+
+                    const trainServices = data.trainServices || [];
+                    for (const service of trainServices) {
+                        const processed = processService(service);
+                        // Add origin station info for multi-station queries
+                        if (stationCodes.length > 1) {
+                            processed.departureStation = getStationName(stationCode.trim());
+                        }
+                        const key = processed.serviceId || `${processed.std}_${processed.destination}_${stationCode}`;
+                        if (key && !allServices[key]) {
+                            allServices[key] = processed;
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`Failed to fetch chunk ${i}:`, e);
+                    failedChunks++;
                 }
-            } catch (e) {
-                console.warn(`Failed to fetch chunk ${i}:`, e);
-                failedChunks++;
             }
         }
 
