@@ -2634,35 +2634,26 @@ function searchStations(query) {
 
 // Find station groups (locations with multiple stations)
 function findStationGroups(stations) {
-    if (stations.length < 2) return { groups: {}, stations };
+    if (!stations || stations.length < 2) return { groups: {}, stations: stations || [] };
 
     const groups = {};
-    const prefixCounts = {};
 
     // Common location prefixes to look for
     const locationPrefixes = [
         'Heathrow', 'Gatwick', 'Birmingham', 'Manchester', 'Liverpool',
         'London', 'Edinburgh', 'Glasgow', 'Leeds', 'Sheffield',
-        'Bristol', 'Cardiff', 'Luton', 'Stansted', 'Southampton'
+        'Bristol', 'Cardiff', 'Luton', 'Stansted', 'Southampton',
+        'Clapham', 'Wimbledon', 'Croydon', 'Stratford', 'Richmond'
     ];
 
-    // Count stations by prefix
-    for (const station of stations) {
-        for (const prefix of locationPrefixes) {
-            if (station.name.toLowerCase().startsWith(prefix.toLowerCase())) {
-                if (!prefixCounts[prefix]) {
-                    prefixCounts[prefix] = [];
-                }
-                prefixCounts[prefix].push(station);
-                break;
-            }
-        }
-    }
+    // For each prefix, find matching stations
+    for (const prefix of locationPrefixes) {
+        const matchingStations = stations.filter(station =>
+            station.name.toLowerCase().startsWith(prefix.toLowerCase())
+        );
 
-    // Only create groups for prefixes with 2+ stations
-    for (const [prefix, stationList] of Object.entries(prefixCounts)) {
-        if (stationList.length >= 2) {
-            groups[prefix] = stationList;
+        if (matchingStations.length >= 2) {
+            groups[prefix] = matchingStations;
         }
     }
 

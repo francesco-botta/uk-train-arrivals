@@ -214,7 +214,11 @@ function displaySearchResults(query, resultsContainer, type) {
         resultsContainer.innerHTML = '<div class="search-result-item">No stations found</div>';
     } else {
         // Find station groups (e.g., "Heathrow" with multiple terminals)
-        const { groups } = findStationGroups(stations);
+        let groups = {};
+        if (typeof findStationGroups === 'function') {
+            const result = findStationGroups(stations);
+            groups = result.groups || {};
+        }
 
         // Add "Clear" option for "to" station
         let html = '';
@@ -279,7 +283,11 @@ function displayDeparturesSearchResults(query) {
         departuresSearchResults.innerHTML = '<div class="search-result-item">No stations found</div>';
     } else {
         // Find station groups
-        const { groups } = findStationGroups(stations);
+        let groups = {};
+        if (typeof findStationGroups === 'function') {
+            const result = findStationGroups(stations);
+            groups = result.groups || {};
+        }
 
         let html = '';
 
