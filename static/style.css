@@ -284,6 +284,21 @@ header h1 {
     border-color: transparent;
 }
 
+/* Custom route tab */
+.tab-btn.custom-route {
+    border-color: #9f7a4a;
+}
+
+.tab-btn.custom-route:hover {
+    border-color: #cfaa6f;
+    background: rgba(159, 122, 74, 0.2);
+}
+
+.tab-btn.custom-route.active {
+    background: linear-gradient(90deg, #9f7a4a, #7a5a2d);
+    border-color: transparent;
+}
+
 .board-container {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 15px;

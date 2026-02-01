@@ -1,10 +1,10 @@
 // Huxley2 API base URL
 const HUXLEY_BASE_URL = 'https://huxley2.azurewebsites.net';
 
-// Current state
-let fromStation = { code: 'KGX', name: 'King\'s Cross' };
-let toStation = { code: null, name: null }; // null means "any destination"
-let currentTab = 'departures';
+// Current state - default to Stoneleigh → Waterloo route
+let fromStation = { code: 'SNL', name: 'Stoneleigh' };
+let toStation = { code: 'WAT', name: 'London Waterloo' };
+let currentTab = 'snl-to-wat';
 let currentTimeInterval = 120; // Time window in minutes (max 120 per API limit)
 let refreshInterval;
 let countdownInterval;
@@ -56,7 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function updateFromStationDisplay() {
-    fromStationDisplay.textContent = `${fromStation.name} (${fromStation.code})`;
+    if (fromStation.code) {
+        fromStationDisplay.textContent = `${fromStation.name} (${fromStation.code})`;
+    } else {
+        fromStationDisplay.textContent = 'Select a station...';
+    }
 }
 
 function updateToStationDisplay() {
@@ -142,10 +146,33 @@ function setupEventListeners() {
                 toStation = { code: route.to, name: route.toName };
                 updateFromStationDisplay();
                 updateToStationDisplay();
-            }
+                updateURL();
+                loadTrains();
+            } else if (currentTab === 'departures') {
+                // Custom route - prompt user to select stations
+                fromStation = { code: null, name: null };
+                toStation = { code: null, name: null };
+                updateFromStationDisplay();
+                updateToStationDisplay();
 
-            updateURL();
-            loadTrains();
+                // Focus on the from station search and show prompt
+                fromStationSearch.focus();
+                fromStationSearch.placeholder = 'Type to search for departure station...';
+
+                // Show prompt in the train list
+                trainBoard.style.display = 'table';
+                loadingEl.style.display = 'none';
+                trainList.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <h3>Select Your Route</h3>
+                                <p>Use the search fields above to select a departure station and optionally an arrival station.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
         });
     });
 
@@ -229,9 +256,10 @@ function displaySearchResults(query, resultsContainer, type) {
 function selectFromStation(code, name) {
     fromStation = { code, name };
     fromStationSearch.value = '';
+    fromStationSearch.placeholder = 'Departure station...';
     updateFromStationDisplay();
 
-    // Clear route tab selection
+    // Switch to custom route tab
     currentTab = 'departures';
     tabBtns.forEach(b => b.classList.remove('active'));
     document.querySelector('[data-tab="departures"]').classList.add('active');
@@ -307,6 +335,23 @@ function processService(service) {
 }
 
 async function loadTrains() {
+    // Don't load if no departure station is selected
+    if (!fromStation.code) {
+        trainBoard.style.display = 'table';
+        loadingEl.style.display = 'none';
+        trainList.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <h3>Select Your Route</h3>
+                        <p>Use the search fields above to select a departure station and optionally an arrival station.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     loadingEl.style.display = 'block';
     errorEl.style.display = 'none';
     trainBoard.style.display = 'none';
