@@ -1,0 +1,584 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    color: #fff;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.station-selector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+}
+
+#station-search {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border: 2px solid #3a3a5c;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#station-search::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#station-search:focus {
+    border-color: #00d4ff;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #2a2a4a;
+    border-radius: 10px;
+    margin-top: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.search-results.active {
+    display: block;
+}
+
+.search-result-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background 0.2s;
+}
+
+.search-result-item:hover {
+    background: rgba(0, 212, 255, 0.2);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item .code {
+    color: #00d4ff;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.current-station {
+    font-size: 1.2rem;
+}
+
+.current-station .label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.current-station .station-name {
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+.current-station .station-code {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.time-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.time-filter label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+
+.time-filter select {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: 2px solid #3a3a5c;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 35px;
+}
+
+.time-filter select:hover,
+.time-filter select:focus {
+    border-color: #00d4ff;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+.time-filter select option {
+    background: #2a2a4a;
+    color: #fff;
+}
+
+.tab-btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+    border: 2px solid #3a3a5c;
+    border-radius: 25px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    border-color: #00d4ff;
+}
+
+.tab-btn.active {
+    background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+    border-color: transparent;
+}
+
+/* Route-specific tabs */
+.tab-btn.route-tab {
+    border-color: #4a9f4a;
+    font-size: 0.9rem;
+}
+
+.tab-btn.route-tab:hover {
+    border-color: #6fcf6f;
+    background: rgba(79, 159, 79, 0.2);
+}
+
+.tab-btn.route-tab.active {
+    background: linear-gradient(90deg, #4a9f4a, #2d7a2d);
+    border-color: transparent;
+}
+
+.board-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.loading, .error {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2rem;
+}
+
+.error {
+    color: #ff6b6b;
+}
+
+.train-board {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.train-board th,
+.train-board td {
+    padding: 15px 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.train-board th {
+    background: rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.train-board tbody tr {
+    transition: background 0.2s;
+}
+
+.train-board tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.train-board .time {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.train-board .expected {
+    font-size: 0.95rem;
+}
+
+.status {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status.on-time {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+}
+
+.status.delayed {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.status.cancelled {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+}
+
+.platform {
+    font-weight: bold;
+    color: #00d4ff;
+    font-size: 1.1rem;
+}
+
+footer {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.refresh-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.refresh-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.refresh-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+}
+
+.last-updated {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    .train-board th,
+    .train-board td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+
+    .dest-col {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    footer {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .tabs {
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .time-filter {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    .train-board {
+        font-size: 0.8rem;
+    }
+
+    .train-board th,
+    .train-board td {
+        padding: 8px 5px;
+    }
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.empty-state h3 {
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+/* Expandable rows */
+.train-row {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.train-row:hover {
+    background: rgba(0, 212, 255, 0.1);
+}
+
+.train-row.expanded {
+    background: rgba(0, 212, 255, 0.15);
+}
+
+.expand-cell {
+    width: 30px;
+    text-align: center;
+}
+
+.expand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background: rgba(0, 212, 255, 0.2);
+    color: #00d4ff;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.train-row:hover .expand-icon {
+    background: rgba(0, 212, 255, 0.4);
+}
+
+/* Calling points row */
+.calling-points-row {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.calling-points-row td {
+    padding: 0;
+    border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+}
+
+.calling-points-container {
+    padding: 15px 20px 15px 50px;
+}
+
+.calling-points-header {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.calling-points-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.calling-point {
+    display: flex;
+    align-items: stretch;
+    min-height: 36px;
+}
+
+.stop-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 20px;
+    margin-right: 12px;
+}
+
+.stop-line {
+    flex: 1;
+    width: 2px;
+    background: rgba(0, 212, 255, 0.4);
+}
+
+.stop-line.first {
+    background: transparent;
+}
+
+.stop-line.last {
+    background: transparent;
+}
+
+.stop-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(0, 212, 255, 0.6);
+    border: 2px solid #00d4ff;
+    flex-shrink: 0;
+}
+
+.stop-dot.final {
+    width: 14px;
+    height: 14px;
+    background: #00d4ff;
+}
+
+.stop-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.calling-point:last-child .stop-info {
+    border-bottom: none;
+}
+
+.stop-name {
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.final-stop .stop-name {
+    font-weight: 600;
+    color: #00d4ff;
+}
+
+.stop-time {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-left: 15px;
+}
+
+.stop-time.delayed {
+    color: #ffc107;
+}
+
+.stop-time.arrived {
+    color: #00ff88;
+}
+
+.stop-time.cancelled {
+    color: #ff6b6b;
+}
+
+.calling-points-loading,
+.calling-points-empty,
+.calling-points-error {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    padding: 10px 0;
+}
+
+.calling-points-error {
+    color: #ff6b6b;
+}
+
+/* Responsive adjustments for calling points */
+@media (max-width: 768px) {
+    .calling-points-container {
+        padding: 12px 15px 12px 30px;
+    }
+
+    .stop-name {
+        font-size: 0.85rem;
+    }
+
+    .stop-time {
+        font-size: 0.8rem;
+    }
+}
