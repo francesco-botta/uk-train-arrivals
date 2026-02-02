@@ -870,3 +870,131 @@ async function loadCommutePanel(fromCode, toCode, container) {
         container.innerHTML = `<div class="panel-no-trains">Error loading trains</div>`;
     }
 }
+
+// London Underground Status
+const tubeLoadingEl = document.getElementById('tube-loading');
+const tubeErrorEl = document.getElementById('tube-error');
+const tubeLinesEl = document.getElementById('tube-lines');
+
+async function loadTubeStatus() {
+    if (!tubeLinesEl) return;
+
+    tubeLoadingEl.style.display = 'block';
+    tubeErrorEl.style.display = 'none';
+    tubeLinesEl.innerHTML = '';
+
+    try {
+        const response = await fetch('/api/tube-status');
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        const lines = data.lines || [];
+
+        if (lines.length === 0) {
+            tubeLoadingEl.style.display = 'none';
+            tubeLinesEl.innerHTML = '<div class="tube-error">No tube status available</div>';
+            return;
+        }
+
+        tubeLinesEl.innerHTML = lines.map(line => {
+            const statusClass = getStatusClass(line.status, line.statusSeverity);
+            const lineIdClass = line.id.toLowerCase().replace(/\s+/g, '-');
+
+            let reasonHtml = '';
+            if (line.reason && line.statusSeverity < 10) {
+                // Truncate long reasons
+                const reason = line.reason.length > 150
+                    ? line.reason.substring(0, 150) + '...'
+                    : line.reason;
+                reasonHtml = `<div class="tube-line-reason">${escapeHtml(reason)}</div>`;
+            }
+
+            return `
+                <div class="tube-line">
+                    <div class="tube-line-indicator ${lineIdClass}"></div>
+                    <div class="tube-line-info">
+                        <div class="tube-line-name">${escapeHtml(line.name)}</div>
+                        <span class="tube-line-status ${statusClass}">${escapeHtml(line.status)}</span>
+                        ${reasonHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        tubeLoadingEl.style.display = 'none';
+
+    } catch (error) {
+        tubeLoadingEl.style.display = 'none';
+        tubeErrorEl.textContent = `Error loading tube status: ${error.message}`;
+        tubeErrorEl.style.display = 'block';
+    }
+}
+
+function getStatusClass(status, severity) {
+    const statusLower = status.toLowerCase();
+
+    if (severity === 10 || statusLower === 'good service') {
+        return 'good-service';
+    } else if (severity === 9 || statusLower === 'minor delays') {
+        return 'minor-delays';
+    } else if (severity === 6 || statusLower === 'severe delays') {
+        return 'severe-delays';
+    } else if (severity === 2 || statusLower === 'suspended') {
+        return 'suspended';
+    } else if (severity === 3 || statusLower === 'part suspended') {
+        return 'part-suspended';
+    } else if (severity === 1 || statusLower === 'closed') {
+        return 'closed';
+    } else if (severity === 7 || statusLower === 'reduced service') {
+        return 'reduced-service';
+    } else if (severity === 5 || statusLower === 'part closure') {
+        return 'part-closure';
+    } else if (severity === 4 || statusLower === 'planned closure') {
+        return 'planned-closure';
+    } else if (severity === 20 || statusLower === 'service closed') {
+        return 'service-closed';
+    } else if (severity === 0 || statusLower === 'special service') {
+        return 'special-service';
+    }
+
+    return 'good-service';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Load tube status on page load and refresh
+document.addEventListener('DOMContentLoaded', () => {
+    loadTubeStatus();
+});
+
+// Add tube status to auto-refresh
+const originalStartAutoRefresh = startAutoRefresh;
+startAutoRefresh = function() {
+    originalStartAutoRefresh();
+
+    // Override the refresh interval to include tube status
+    clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => {
+        loadTrains();
+        loadCommutePanels();
+        loadTubeStatus();
+        resetCountdown();
+    }, 60000);
+};
+
+// Update refresh button to also refresh tube status
+const originalRefreshHandler = refreshBtn.onclick;
+refreshBtn.addEventListener('click', () => {
+    loadTubeStatus();
+});

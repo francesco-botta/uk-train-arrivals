@@ -172,5 +172,34 @@ def api_search_stations():
     return jsonify(results)
 
 
+@app.route("/api/tube-status")
+def get_tube_status():
+    """Get London Underground line status from TfL API."""
+    try:
+        response = requests.get(
+            "https://api.tfl.gov.uk/Line/Mode/tube/Status",
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        lines = []
+        for line in data:
+            line_statuses = line.get("lineStatuses", [])
+            status_info = line_statuses[0] if line_statuses else {}
+
+            lines.append({
+                "id": line.get("id", ""),
+                "name": line.get("name", ""),
+                "status": status_info.get("statusSeverityDescription", "Unknown"),
+                "statusSeverity": status_info.get("statusSeverity", 0),
+                "reason": status_info.get("reason", "")
+            })
+
+        return jsonify({"lines": lines})
+    except requests.RequestException as e:
+        return jsonify({"error": str(e), "lines": []}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)

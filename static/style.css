@@ -972,3 +972,152 @@ footer {
         font-size: 0.8rem;
     }
 }
+
+/* London Underground Status Section */
+.tube-status-section {
+    margin-top: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.tube-status-section h2 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.tube-loading, .tube-error {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.tube-error {
+    color: #ff6b6b;
+}
+
+.tube-lines {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.tube-line {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tube-line:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.tube-line-indicator {
+    width: 8px;
+    height: 40px;
+    border-radius: 4px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.tube-line-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tube-line-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.tube-line-status {
+    font-size: 0.85rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.tube-line-status.good-service {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+}
+
+.tube-line-status.minor-delays {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.tube-line-status.severe-delays,
+.tube-line-status.suspended,
+.tube-line-status.part-suspended,
+.tube-line-status.closed {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+}
+
+.tube-line-status.reduced-service,
+.tube-line-status.part-closure,
+.tube-line-status.planned-closure {
+    background: rgba(255, 165, 0, 0.2);
+    color: #ffa500;
+}
+
+.tube-line-status.service-closed,
+.tube-line-status.special-service {
+    background: rgba(128, 128, 128, 0.2);
+    color: #aaa;
+}
+
+.tube-line-reason {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+/* Tube line colors */
+.tube-line-indicator.bakerloo { background: #B36305; }
+.tube-line-indicator.central { background: #E32017; }
+.tube-line-indicator.circle { background: #FFD300; }
+.tube-line-indicator.district { background: #00782A; }
+.tube-line-indicator.hammersmith-city { background: #F3A9BB; }
+.tube-line-indicator.jubilee { background: #A0A5A9; }
+.tube-line-indicator.metropolitan { background: #9B0056; }
+.tube-line-indicator.northern { background: #000000; border: 1px solid #444; }
+.tube-line-indicator.piccadilly { background: #003688; }
+.tube-line-indicator.victoria { background: #0098D4; }
+.tube-line-indicator.waterloo-city { background: #95CDBA; }
+.tube-line-indicator.elizabeth { background: #6950A1; }
+
+@media (max-width: 768px) {
+    .tube-status-section {
+        padding: 15px;
+    }
+
+    .tube-status-section h2 {
+        font-size: 1.3rem;
+    }
+
+    .tube-lines {
+        grid-template-columns: 1fr;
+    }
+
+    .tube-line {
+        padding: 10px 12px;
+    }
+
+    .tube-line-name {
+        font-size: 0.95rem;
+    }
+}
