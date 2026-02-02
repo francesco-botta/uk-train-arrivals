@@ -884,18 +884,26 @@ async function loadTubeStatus() {
     tubeLinesEl.innerHTML = '';
 
     try {
-        const response = await fetch('/api/tube-status');
+        // Call TfL API directly (supports CORS)
+        const response = await fetch('https://api.tfl.gov.uk/Line/Mode/tube/Status');
         if (!response.ok) {
             throw new Error(`API error: ${response.status}`);
         }
 
         const data = await response.json();
 
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        const lines = data.lines || [];
+        // Transform TfL API response
+        const lines = data.map(line => {
+            const lineStatuses = line.lineStatuses || [];
+            const statusInfo = lineStatuses[0] || {};
+            return {
+                id: line.id || '',
+                name: line.name || '',
+                status: statusInfo.statusSeverityDescription || 'Unknown',
+                statusSeverity: statusInfo.statusSeverity || 0,
+                reason: statusInfo.reason || ''
+            };
+        });
 
         if (lines.length === 0) {
             tubeLoadingEl.style.display = 'none';

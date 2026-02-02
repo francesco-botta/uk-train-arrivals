@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UK Train Times</title>
-    <link rel="stylesheet" href="static/style.css?v=6">
+    <link rel="stylesheet" href="static/style.css?v=7">
 </head>
 <body>
     <div class="container">
@@ -116,9 +116,16 @@
                 Last updated: <span id="last-updated">-</span>
             </div>
         </footer>
+
+        <section class="tube-status-section">
+            <h2>London Underground Status</h2>
+            <div id="tube-loading" class="tube-loading">Loading tube status...</div>
+            <div id="tube-error" class="tube-error" style="display: none;"></div>
+            <div id="tube-lines" class="tube-lines"></div>
+        </section>
     </div>
 
     <script src="static/stations.js?v=4"></script>
-    <script src="static/app.js?v=4"></script>
+    <script src="static/app.js?v=5"></script>
 </body>
 </html>
