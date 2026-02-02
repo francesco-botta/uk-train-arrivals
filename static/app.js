@@ -5,7 +5,6 @@ const HUXLEY_BASE_URL = 'https://national-rail-api.davwheat.dev';
 let fromStation = { code: 'SNL', name: 'Stoneleigh' };
 let toStation = { code: 'WAT', name: 'London Waterloo' };
 let currentTab = 'snl-to-wat';
-let currentTimeOffset = 0; // Time offset in minutes from now
 let refreshInterval;
 let countdownInterval;
 let countdown = 60;
@@ -35,10 +34,6 @@ const countdownEl = document.getElementById('countdown');
 const lastUpdatedEl = document.getElementById('last-updated');
 const refreshBtn = document.getElementById('refresh-btn');
 const tabBtns = document.querySelectorAll('.tab-btn');
-const travelTimeInput = document.getElementById('travel-time');
-const searchBtn = document.getElementById('search-btn');
-const nowBtn = document.getElementById('now-btn');
-const searchInfoEl = document.getElementById('search-info');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -56,78 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateToStationDisplay();
     }
 
-    // Set default time to now
-    setTimeToNow();
-
     loadTrains();
     loadCommutePanels();
     startAutoRefresh();
     setupEventListeners();
 });
-
-// Set the time input to current time
-function setTimeToNow() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    if (travelTimeInput) {
-        travelTimeInput.value = `${hours}:${minutes}`;
-    }
-    currentTimeOffset = 0;
-}
-
-// Calculate time offset in minutes from now based on selected time
-function calculateTimeOffset() {
-    if (!travelTimeInput || !travelTimeInput.value) {
-        return 0;
-    }
-
-    const now = new Date();
-    const selectedTime = travelTimeInput.value.split(':');
-    const selectedHours = parseInt(selectedTime[0], 10);
-    const selectedMinutes = parseInt(selectedTime[1], 10);
-
-    const targetDate = new Date();
-    targetDate.setHours(selectedHours, selectedMinutes, 0, 0);
-
-    const diffMs = targetDate - now;
-    const diffMinutes = Math.round(diffMs / 60000);
-
-    // API supports -120 to 119 for timeOffset
-    return diffMinutes;
-}
-
-// Check if the time offset is within API limits
-function isTimeOffsetValid(offset) {
-    return offset >= -120 && offset <= 119;
-}
-
-// Get a formatted string for the selected time
-function getSelectedTimeString() {
-    if (!travelTimeInput || !travelTimeInput.value) {
-        return null;
-    }
-    return travelTimeInput.value;
-}
-
-// Update the search info display
-function updateSearchInfo() {
-    if (!searchInfoEl) return;
-
-    if (currentTimeOffset === 0) {
-        searchInfoEl.classList.remove('active');
-        return;
-    }
-
-    const timeText = travelTimeInput?.value || '';
-
-    if (timeText) {
-        searchInfoEl.innerHTML = `Showing trains from <span class="time-label">${timeText}</span> (2 hours)`;
-        searchInfoEl.classList.add('active');
-    } else {
-        searchInfoEl.classList.remove('active');
-    }
-}
 
 function updateFromStationDisplay() {
     if (fromStation.code) {
@@ -257,32 +185,6 @@ function setupEventListeners() {
         loadCommutePanels();
         resetCountdown();
     });
-
-    // Search button - search for trains at selected date/time
-    if (searchBtn) {
-        searchBtn.addEventListener('click', () => {
-            currentTimeOffset = calculateTimeOffset();
-            loadTrains();
-        });
-    }
-
-    // Now button - reset to current time
-    if (nowBtn) {
-        nowBtn.addEventListener('click', () => {
-            setTimeToNow();
-            loadTrains();
-        });
-    }
-
-    // Also search when pressing Enter in the time input
-    if (travelTimeInput) {
-        travelTimeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                currentTimeOffset = calculateTimeOffset();
-                loadTrains();
-            }
-        });
-    }
 
     // Allow clearing "to" station by pressing Escape or clearing the field
     toStationSearch.addEventListener('keydown', (e) => {
@@ -578,18 +480,8 @@ async function loadTrains() {
 
     try {
         const timeWindow = 120; // Show 2 hours of trains
-        const timeOffset = currentTimeOffset; // Offset from now in minutes
+        const timeOffset = 0; // Always show from now
         const filterTo = toStation.code;
-
-        // Check if the selected time is within API limits
-        if (!isTimeOffsetValid(timeOffset)) {
-            loadingEl.style.display = 'none';
-            const selectedTime = getSelectedTimeString() || 'the selected time';
-            errorEl.innerHTML = `<strong>Time out of range</strong><br>The train data API only supports searching up to 2 hours from now.<br>Please select a time closer to the current time.`;
-            errorEl.style.display = 'block';
-            trainBoard.style.display = 'none';
-            return;
-        }
 
         // Handle multiple station codes (comma-separated for "All stations" selections)
         const stationCodes = fromStation.code.includes(',')
@@ -642,7 +534,6 @@ async function loadTrains() {
 
         renderTrains(services, failedChunks > 0);
         updateLastUpdated(generatedAt);
-        updateSearchInfo();
 
         loadingEl.style.display = 'none';
         trainBoard.style.display = 'table';
@@ -661,22 +552,10 @@ function parseTimeToMinutes(timeStr) {
     return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
 }
 
-function getSearchTimeDescription() {
-    if (!travelTimeInput || !travelTimeInput.value) {
-        return 'the next 2 hours';
-    }
-    const timeText = travelTimeInput.value;
-    if (currentTimeOffset === 0) {
-        return 'the next 2 hours';
-    }
-    return `2 hours from ${timeText}`;
-}
-
 function renderTrains(services, hadErrors = false) {
     const filteredServices = services || [];
 
     if (!filteredServices || filteredServices.length === 0) {
-        const timeDescription = getSearchTimeDescription();
         const routeText = toStation.code
             ? ` to ${toStation.name}`
             : '';
@@ -686,7 +565,7 @@ function renderTrains(services, hadErrors = false) {
                 <td colspan="6">
                     <div class="empty-state">
                         <h3>No trains scheduled</h3>
-                        <p>There are no departures from ${fromStation.name}${routeText} in ${timeDescription}.</p>
+                        <p>There are no departures from ${fromStation.name}${routeText} in the next 2 hours.</p>
                         ${errorNote}
                     </div>
                 </td>
