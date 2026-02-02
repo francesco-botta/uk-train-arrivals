@@ -292,65 +292,6 @@ header h1 {
     color: #fff;
 }
 
-.date-filter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.date-filter label {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.95rem;
-}
-
-.date-filter input[type="date"] {
-    padding: 10px 15px;
-    font-size: 1rem;
-    border: 2px solid #3a3a5c;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.date-filter input[type="date"]:hover,
-.date-filter input[type="date"]:focus {
-    border-color: #00d4ff;
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
-}
-
-.date-filter input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-    cursor: pointer;
-}
-
-.limitation-notice {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 15px 20px;
-    background: rgba(255, 193, 7, 0.15);
-    border: 1px solid rgba(255, 193, 7, 0.4);
-    border-radius: 10px;
-    margin-bottom: 20px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.limitation-notice .notice-icon {
-    font-size: 1.2rem;
-}
-
-.limitation-notice .notice-text {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
 .tab-btn {
     padding: 12px 30px;
     font-size: 1rem;
