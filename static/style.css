@@ -605,6 +605,11 @@ header h1 {
     overflow: hidden;
 }
 
+.commute-panel.wide {
+    max-width: 100%;
+    flex-basis: 100%;
+}
+
 .panel-header {
     background: linear-gradient(90deg, rgba(0, 212, 255, 0.2), rgba(123, 44, 191, 0.2));
     padding: 12px 15px;
@@ -634,6 +639,27 @@ header h1 {
     padding: 10px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: background 0.2s;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.panel-train-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.panel-train-dest {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+}
+
+.panel-train-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .panel-train-item:last-child {

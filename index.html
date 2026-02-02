@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UK Train Times</title>
-    <link rel="stylesheet" href="static/style.css?v=11">
+    <link rel="stylesheet" href="static/style.css?v=12">
 </head>
 <body>
     <div class="container">
@@ -24,6 +24,18 @@
                 <div class="commute-panel">
                     <div class="panel-header">Waterloo → Stoneleigh</div>
                     <div class="panel-trains" id="wat-snl-trains">
+                        <div class="panel-loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="commute-section">
+            <div class="section-label">Sutton (London) - Next 30 minutes</div>
+            <div class="commute-panels">
+                <div class="commute-panel wide">
+                    <div class="panel-header">All departures from Sutton</div>
+                    <div class="panel-trains" id="sutton-trains">
                         <div class="panel-loading">Loading...</div>
                     </div>
                 </div>
@@ -118,6 +130,6 @@
     </div>
 
     <script src="static/stations.js?v=4"></script>
-    <script src="static/app.js?v=13"></script>
+    <script src="static/app.js?v=14"></script>
 </body>
 </html>

@@ -778,12 +778,78 @@ window.addEventListener('popstate', () => {
 // Commute Panels - Stoneleigh <-> Waterloo
 const snlWatTrains = document.getElementById('snl-wat-trains');
 const watSnlTrains = document.getElementById('wat-snl-trains');
+const suttonTrains = document.getElementById('sutton-trains');
 
 async function loadCommutePanels() {
     await Promise.all([
         loadCommutePanel('SNL', 'WAT', snlWatTrains),
-        loadCommutePanel('WAT', 'SNL', watSnlTrains)
+        loadCommutePanel('WAT', 'SNL', watSnlTrains),
+        loadSuttonDepartures()
     ]);
+}
+
+async function loadSuttonDepartures() {
+    if (!suttonTrains) return;
+
+    try {
+        const response = await fetch(
+            `${HUXLEY_BASE_URL}/departures/SUO/15?expand=true&timeOffset=0&timeWindow=30`
+        );
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const services = data.trainServices || [];
+
+        if (services.length === 0) {
+            suttonTrains.innerHTML = '<div class="panel-no-trains">No trains in next 30 minutes</div>';
+            return;
+        }
+
+        suttonTrains.innerHTML = services.slice(0, 10).map(service => {
+            const time = service.std || '-';
+            const expected = service.etd || '';
+            const platform = service.platform || '-';
+            const destination = service.destination && service.destination[0]
+                ? getStationName(service.destination[0].crs)
+                : '-';
+
+            let expectedClass = '';
+            let expectedText = '';
+
+            if (service.isCancelled) {
+                expectedClass = 'cancelled';
+                expectedText = 'Cancelled';
+            } else if (expected === 'On time') {
+                expectedClass = 'on-time';
+                expectedText = 'On time';
+            } else if (expected && expected !== time) {
+                expectedClass = 'delayed';
+                expectedText = `Exp ${expected}`;
+            } else {
+                expectedClass = 'on-time';
+                expectedText = 'On time';
+            }
+
+            return `
+                <div class="panel-train-item">
+                    <div class="panel-train-main">
+                        <span class="panel-train-time">${time}</span>
+                        <span class="panel-train-dest">${destination}</span>
+                    </div>
+                    <div class="panel-train-info">
+                        <span class="panel-train-expected ${expectedClass}">${expectedText}</span>
+                        <span class="panel-train-platform">Plat ${platform}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        suttonTrains.innerHTML = `<div class="panel-no-trains">Data service unavailable</div>`;
+    }
 }
 
 async function loadCommutePanel(fromCode, toCode, container) {
