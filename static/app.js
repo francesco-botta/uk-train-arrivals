@@ -538,6 +538,15 @@ async function loadTrains() {
         const services = Object.values(allServices);
         services.sort((a, b) => (a.std || '99:99').localeCompare(b.std || '99:99'));
 
+        // Check if all chunks failed
+        if (services.length === 0 && failedChunks > 0) {
+            loadingEl.style.display = 'none';
+            errorEl.innerHTML = `<strong>Train data temporarily unavailable</strong><br>The National Rail data service (Huxley2) may be experiencing issues. Please try again in a few minutes.`;
+            errorEl.style.display = 'block';
+            trainBoard.style.display = 'none';
+            return;
+        }
+
         renderTrains(services, failedChunks > 0);
         updateLastUpdated(generatedAt);
 
@@ -545,7 +554,7 @@ async function loadTrains() {
         trainBoard.style.display = 'table';
     } catch (error) {
         loadingEl.style.display = 'none';
-        errorEl.textContent = `Error loading train times: ${error.message}`;
+        errorEl.innerHTML = `<strong>Error loading train times</strong><br>${error.message}<br><small>The data service may be temporarily unavailable.</small>`;
         errorEl.style.display = 'block';
         trainBoard.style.display = 'none';
     }
@@ -867,7 +876,7 @@ async function loadCommutePanel(fromCode, toCode, container) {
         }).join('');
 
     } catch (error) {
-        container.innerHTML = `<div class="panel-no-trains">Error loading trains</div>`;
+        container.innerHTML = `<div class="panel-no-trains">Data service unavailable</div>`;
     }
 }
 
