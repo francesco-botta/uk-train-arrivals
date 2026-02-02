@@ -668,6 +668,12 @@ footer {
 
     .swap-button-container {
         padding: 10px 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .swap-btn {
         transform: rotate(90deg);
     }
 
