@@ -728,6 +728,31 @@ header h1 {
     overflow-x: auto;
 }
 
+.search-info {
+    text-align: center;
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), rgba(123, 44, 191, 0.1));
+    border-radius: 10px;
+    font-size: 1.1rem;
+    color: #fff;
+    display: none;
+}
+
+.search-info.active {
+    display: block;
+}
+
+.search-info .date-label {
+    color: #00d4ff;
+    font-weight: 600;
+}
+
+.search-info .time-label {
+    color: #7b2cbf;
+    font-weight: 600;
+}
+
 .loading, .error {
     text-align: center;
     padding: 40px;

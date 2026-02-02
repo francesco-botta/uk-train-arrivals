@@ -39,6 +39,7 @@ const travelDateSelect = document.getElementById('travel-date');
 const travelTimeInput = document.getElementById('travel-time');
 const searchBtn = document.getElementById('search-btn');
 const nowBtn = document.getElementById('now-btn');
+const searchInfoEl = document.getElementById('search-info');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -97,10 +98,46 @@ function calculateTimeOffset() {
     targetDate.setHours(selectedHours, selectedMinutes, 0, 0);
 
     const diffMs = targetDate - now;
-    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffMinutes = Math.round(diffMs / 60000);
 
     // API supports -120 to 119 for timeOffset
-    return Math.max(-120, Math.min(119, diffMinutes));
+    // If outside range, we'll show a message to the user
+    return diffMinutes;
+}
+
+// Check if the time offset is within API limits
+function isTimeOffsetValid(offset) {
+    return offset >= -120 && offset <= 119;
+}
+
+// Get a formatted string for the selected date/time
+function getSelectedDateTimeString() {
+    if (!travelDateSelect || !travelTimeInput || !travelTimeInput.value) {
+        return null;
+    }
+    const dateText = travelDateSelect.value === 'tomorrow' ? 'Tomorrow' : 'Today';
+    const timeText = travelTimeInput.value;
+    return `${dateText} from ${timeText}`;
+}
+
+// Update the search info display
+function updateSearchInfo() {
+    if (!searchInfoEl) return;
+
+    if (currentTimeOffset === 0) {
+        searchInfoEl.classList.remove('active');
+        return;
+    }
+
+    const dateText = travelDateSelect?.value === 'tomorrow' ? 'Tomorrow' : 'Today';
+    const timeText = travelTimeInput?.value || '';
+
+    if (timeText) {
+        searchInfoEl.innerHTML = `Showing trains for <span class="date-label">${dateText}</span> from <span class="time-label">${timeText}</span> (1 hour)`;
+        searchInfoEl.classList.add('active');
+    } else {
+        searchInfoEl.classList.remove('active');
+    }
 }
 
 function updateFromStationDisplay() {
@@ -551,9 +588,19 @@ async function loadTrains() {
     trainBoard.style.display = 'none';
 
     try {
-        const timeWindow = 120; // Always show 2 hours of trains
+        const timeWindow = 60; // Show 1 hour of trains
         const timeOffset = currentTimeOffset; // Offset from now in minutes
         const filterTo = toStation.code;
+
+        // Check if the selected time is within API limits
+        if (!isTimeOffsetValid(timeOffset)) {
+            loadingEl.style.display = 'none';
+            const selectedDateTime = getSelectedDateTimeString() || 'the selected time';
+            errorEl.innerHTML = `<strong>Time out of range</strong><br>The train data API only supports searching up to 2 hours from now.<br>Please select a time closer to the current time.`;
+            errorEl.style.display = 'block';
+            trainBoard.style.display = 'none';
+            return;
+        }
 
         // Handle multiple station codes (comma-separated for "All stations" selections)
         const stationCodes = fromStation.code.includes(',')
@@ -566,36 +613,28 @@ async function loadTrains() {
 
         // Fetch from each station
         for (const stationCode of stationCodes) {
-            const chunkSize = 30;
-            const numChunks = Math.ceil(timeWindow / chunkSize);
+            try {
+                const data = await fetchDeparturesChunk(stationCode.trim(), timeOffset, timeWindow, filterTo);
 
-            for (let i = 0; i < numChunks; i++) {
-                const chunkOffset = timeOffset + (i * chunkSize);
-                const window = Math.min(chunkSize, timeWindow - (i * chunkSize));
-
-                try {
-                    const data = await fetchDeparturesChunk(stationCode.trim(), chunkOffset, window, filterTo);
-
-                    if (!generatedAt) {
-                        generatedAt = data.generatedAt || '';
-                    }
-
-                    const trainServices = data.trainServices || [];
-                    for (const service of trainServices) {
-                        const processed = processService(service);
-                        // Add origin station info for multi-station queries
-                        if (stationCodes.length > 1) {
-                            processed.departureStation = getStationName(stationCode.trim());
-                        }
-                        const key = processed.serviceId || `${processed.std}_${processed.destination}_${stationCode}`;
-                        if (key && !allServices[key]) {
-                            allServices[key] = processed;
-                        }
-                    }
-                } catch (e) {
-                    console.warn(`Failed to fetch chunk ${i}:`, e);
-                    failedChunks++;
+                if (!generatedAt) {
+                    generatedAt = data.generatedAt || '';
                 }
+
+                const trainServices = data.trainServices || [];
+                for (const service of trainServices) {
+                    const processed = processService(service);
+                    // Add origin station info for multi-station queries
+                    if (stationCodes.length > 1) {
+                        processed.departureStation = getStationName(stationCode.trim());
+                    }
+                    const key = processed.serviceId || `${processed.std}_${processed.destination}_${stationCode}`;
+                    if (key && !allServices[key]) {
+                        allServices[key] = processed;
+                    }
+                }
+            } catch (e) {
+                console.warn(`Failed to fetch from ${stationCode}:`, e);
+                failedChunks++;
             }
         }
 
@@ -614,6 +653,7 @@ async function loadTrains() {
 
         renderTrains(services, failedChunks > 0);
         updateLastUpdated(generatedAt);
+        updateSearchInfo();
 
         loadingEl.style.display = 'none';
         trainBoard.style.display = 'table';
@@ -634,14 +674,14 @@ function parseTimeToMinutes(timeStr) {
 
 function getSearchTimeDescription() {
     if (!travelDateSelect || !travelTimeInput || !travelTimeInput.value) {
-        return 'the next 2 hours';
+        return 'the next hour';
     }
     const dateText = travelDateSelect.value === 'tomorrow' ? 'tomorrow' : 'today';
     const timeText = travelTimeInput.value;
     if (currentTimeOffset === 0) {
-        return 'the next 2 hours';
+        return 'the next hour';
     }
-    return `2 hours from ${timeText} ${dateText}`;
+    return `1 hour from ${timeText} ${dateText}`;
 }
 
 function renderTrains(services, hadErrors = false) {
