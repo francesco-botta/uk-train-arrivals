@@ -877,6 +877,9 @@ async function loadCommutePanel(fromCode, toCode, container) {
             const expected = service.etd || '';
             const platform = service.platform || '-';
             const serviceId = service.serviceID || service.rsid || '';
+            const destination = service.destination && service.destination[0]
+                ? getStationName(service.destination[0].crs)
+                : '-';
 
             let expectedClass = '';
             let expectedText = '';
@@ -897,12 +900,15 @@ async function loadCommutePanel(fromCode, toCode, container) {
 
             return `
                 <div class="panel-train-item clickable" data-service-id="${serviceId}" data-panel-index="${panelId}-${index}">
-                    <div class="panel-train-row">
+                    <div class="panel-train-main">
                         <span class="panel-expand-icon">+</span>
                         <span class="panel-train-time">${time}</span>
-                        <span class="panel-train-expected ${expectedClass}">${expectedText}</span>
+                        <span class="panel-train-dest">${destination}</span>
                     </div>
-                    <span class="panel-train-platform">Plat ${platform}</span>
+                    <div class="panel-train-info">
+                        <span class="panel-train-expected ${expectedClass}">${expectedText}</span>
+                        <span class="panel-train-platform">Plat ${platform}</span>
+                    </div>
                 </div>
                 <div class="panel-calling-points" id="panel-stops-${panelId}-${index}" style="display: none;">
                     <div class="panel-stops-loading">Loading stops...</div>
