@@ -1,5 +1,5 @@
-// Huxley2 API base URL
-const HUXLEY_BASE_URL = 'https://huxley2.azurewebsites.net';
+// National Rail API base URL (alternative Huxley-style proxy)
+const HUXLEY_BASE_URL = 'https://national-rail-api.davwheat.dev';
 
 // Current state - default to Stoneleigh → Waterloo route
 let fromStation = { code: 'SNL', name: 'Stoneleigh' };
