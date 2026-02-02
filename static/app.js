@@ -702,24 +702,14 @@ async function fetchCallingPoints(serviceId, container) {
             }
 
             return `
-                <div class="calling-point ${isLast ? 'final-stop' : ''}">
-                    <div class="stop-indicator">
-                        <div class="stop-line ${idx === 0 ? 'first' : ''}"></div>
-                        <div class="stop-dot ${isLast ? 'final' : ''}"></div>
-                        <div class="stop-line bottom ${isLast ? 'last' : ''}"></div>
-                    </div>
-                    <div class="stop-info">
-                        <span class="stop-name">${point.station}</span>
-                        <span class="stop-time ${timeClass}">${timeDisplay}</span>
-                    </div>
+                <div class="panel-stop ${isLast ? 'final' : ''}">
+                    <span class="panel-stop-name">${point.station}</span>
+                    <span class="panel-stop-time ${timeClass}">${timeDisplay}</span>
                 </div>
             `;
         }).join('');
 
-        container.innerHTML = `
-            <div class="calling-points-header">Calling at:</div>
-            <div class="calling-points-list">${stopsHtml}</div>
-        `;
+        container.innerHTML = `<div class="panel-stops-list">${stopsHtml}</div>`;
 
     } catch (error) {
         container.innerHTML = `<div class="calling-points-error">Failed to load stops: ${error.message}</div>`;

@@ -1120,105 +1120,8 @@ footer {
 }
 
 .calling-points-container {
-    padding: 15px 20px 15px 50px;
-}
-
-.calling-points-header {
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 12px;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.calling-points-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.calling-point {
-    display: flex;
-    align-items: stretch;
-    min-height: 36px;
-}
-
-.stop-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 20px;
-    margin-right: 12px;
-}
-
-.stop-line {
-    flex: 1;
-    width: 2px;
-    background: rgba(0, 212, 255, 0.4);
-}
-
-.stop-line.first {
-    background: transparent;
-}
-
-.stop-line.last {
-    background: transparent;
-}
-
-.stop-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(0, 212, 255, 0.6);
-    border: 2px solid #00d4ff;
-    flex-shrink: 0;
-}
-
-.stop-dot.final {
-    width: 14px;
-    height: 14px;
-    background: #00d4ff;
-}
-
-.stop-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex: 1;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.calling-point:last-child .stop-info {
-    border-bottom: none;
-}
-
-.stop-name {
-    color: #fff;
-    font-size: 0.95rem;
-}
-
-.final-stop .stop-name {
-    font-weight: 600;
-    color: #00d4ff;
-}
-
-.stop-time {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
-    margin-left: 15px;
-}
-
-.stop-time.delayed {
-    color: #ffc107;
-}
-
-.stop-time.arrived {
-    color: #00ff88;
-}
-
-.stop-time.cancelled {
-    color: #ff6b6b;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .calling-points-loading,
@@ -1226,7 +1129,7 @@ footer {
 .calling-points-error {
     color: rgba(255, 255, 255, 0.6);
     font-style: italic;
-    padding: 10px 0;
+    padding: 5px 0;
 }
 
 .calling-points-error {
@@ -1236,15 +1139,7 @@ footer {
 /* Responsive adjustments for calling points */
 @media (max-width: 768px) {
     .calling-points-container {
-        padding: 12px 15px 12px 30px;
-    }
-
-    .stop-name {
-        font-size: 0.85rem;
-    }
-
-    .stop-time {
-        font-size: 0.8rem;
+        padding: 8px 12px;
     }
 }
 
