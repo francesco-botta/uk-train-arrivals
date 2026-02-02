@@ -584,7 +584,7 @@ async function loadTrains() {
         // Check if the selected time is within API limits
         if (!isTimeOffsetValid(timeOffset)) {
             loadingEl.style.display = 'none';
-            const selectedDateTime = getSelectedDateTimeString() || 'the selected time';
+            const selectedTime = getSelectedTimeString() || 'the selected time';
             errorEl.innerHTML = `<strong>Time out of range</strong><br>The train data API only supports searching up to 2 hours from now.<br>Please select a time closer to the current time.`;
             errorEl.style.display = 'block';
             trainBoard.style.display = 'none';
