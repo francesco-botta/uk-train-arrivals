@@ -128,10 +128,6 @@ header h1 {
     padding: 15px 20px;
 }
 
-.station-input-group:first-child {
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 .station-input-group label {
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.5);
@@ -408,23 +404,23 @@ header h1 {
     align-items: center;
     justify-content: center;
     gap: 15px;
-    padding: 15px 25px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     flex-wrap: wrap;
 }
 
 .station-departures-section .departures-search {
-    max-width: 280px;
+    max-width: 300px;
 }
 
 .station-departures-section #departures-station-search {
     width: 100%;
-    padding: 10px 16px;
-    font-size: 0.9rem;
-    border: 2px solid rgba(159, 122, 74, 0.4);
-    border-radius: 20px;
+    padding: 14px 20px;
+    font-size: 0.95rem;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
     background: rgba(0, 0, 0, 0.3);
     color: #fff;
     outline: none;
@@ -433,17 +429,19 @@ header h1 {
 
 .station-departures-section #departures-station-search::placeholder {
     color: rgba(255, 255, 255, 0.4);
+    font-size: 0.9rem;
 }
 
 .station-departures-section #departures-station-search:focus {
-    border-color: #cfaa6f;
-    box-shadow: 0 0 15px rgba(159, 122, 74, 0.3);
+    border-color: #00d4ff;
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2), inset 0 0 10px rgba(0, 212, 255, 0.05);
 }
 
 .selected-departure-station {
-    color: #cfaa6f;
+    color: #00d4ff;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
 }
 
 /* Commute Section */
@@ -713,12 +711,16 @@ header h1 {
     .station-departures-section {
         flex-direction: column;
         padding: 15px;
-        gap: 12px;
+        gap: 15px;
     }
 
     .station-departures-section .departures-search {
         max-width: 100%;
         width: 100%;
+    }
+
+    .station-departures-section .section-label {
+        text-align: center;
     }
 
     .panel-calling-points {
@@ -876,11 +878,6 @@ footer {
         padding: 15px;
     }
 
-    .station-input-group:first-child {
-        border-right: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
     .swap-button-container {
         padding: 10px 0;
         width: 100%;
@@ -953,9 +950,22 @@ footer {
         padding: 8px 5px;
     }
 
-    .commute-section,
+    .commute-section {
+        padding: 12px;
+    }
+
     .station-departures-section {
         padding: 12px;
+    }
+
+    .station-departures-section #departures-station-search {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+
+    .selected-departure-station {
+        font-size: 1rem;
+        text-align: center;
     }
 
     .panel-header {
