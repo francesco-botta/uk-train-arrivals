@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UK Train Times</title>
-    <link rel="stylesheet" href="static/style.css?v=10">
+    <link rel="stylesheet" href="static/style.css?v=11">
 </head>
 <body>
     <div class="container">
@@ -78,15 +78,8 @@
             </div>
 
             <div class="datetime-filter">
-                <div class="date-selector">
-                    <label for="travel-date">Date:</label>
-                    <select id="travel-date">
-                        <option value="today" selected>Today</option>
-                        <option value="tomorrow">Tomorrow</option>
-                    </select>
-                </div>
                 <div class="time-selector">
-                    <label for="travel-time">Time:</label>
+                    <label for="travel-time">Departing from:</label>
                     <input type="time" id="travel-time" value="">
                 </div>
                 <button id="search-btn" class="search-btn">Search</button>
@@ -134,6 +127,6 @@
     </div>
 
     <script src="static/stations.js?v=4"></script>
-    <script src="static/app.js?v=9"></script>
+    <script src="static/app.js?v=10"></script>
 </body>
 </html>

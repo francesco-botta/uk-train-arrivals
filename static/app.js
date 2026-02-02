@@ -35,7 +35,6 @@ const countdownEl = document.getElementById('countdown');
 const lastUpdatedEl = document.getElementById('last-updated');
 const refreshBtn = document.getElementById('refresh-btn');
 const tabBtns = document.querySelectorAll('.tab-btn');
-const travelDateSelect = document.getElementById('travel-date');
 const travelTimeInput = document.getElementById('travel-time');
 const searchBtn = document.getElementById('search-btn');
 const nowBtn = document.getElementById('now-btn');
@@ -74,15 +73,12 @@ function setTimeToNow() {
     if (travelTimeInput) {
         travelTimeInput.value = `${hours}:${minutes}`;
     }
-    if (travelDateSelect) {
-        travelDateSelect.value = 'today';
-    }
     currentTimeOffset = 0;
 }
 
-// Calculate time offset in minutes from now based on selected date/time
+// Calculate time offset in minutes from now based on selected time
 function calculateTimeOffset() {
-    if (!travelDateSelect || !travelTimeInput || !travelTimeInput.value) {
+    if (!travelTimeInput || !travelTimeInput.value) {
         return 0;
     }
 
@@ -91,17 +87,13 @@ function calculateTimeOffset() {
     const selectedHours = parseInt(selectedTime[0], 10);
     const selectedMinutes = parseInt(selectedTime[1], 10);
 
-    let targetDate = new Date();
-    if (travelDateSelect.value === 'tomorrow') {
-        targetDate.setDate(targetDate.getDate() + 1);
-    }
+    const targetDate = new Date();
     targetDate.setHours(selectedHours, selectedMinutes, 0, 0);
 
     const diffMs = targetDate - now;
     const diffMinutes = Math.round(diffMs / 60000);
 
     // API supports -120 to 119 for timeOffset
-    // If outside range, we'll show a message to the user
     return diffMinutes;
 }
 
@@ -110,14 +102,12 @@ function isTimeOffsetValid(offset) {
     return offset >= -120 && offset <= 119;
 }
 
-// Get a formatted string for the selected date/time
-function getSelectedDateTimeString() {
-    if (!travelDateSelect || !travelTimeInput || !travelTimeInput.value) {
+// Get a formatted string for the selected time
+function getSelectedTimeString() {
+    if (!travelTimeInput || !travelTimeInput.value) {
         return null;
     }
-    const dateText = travelDateSelect.value === 'tomorrow' ? 'Tomorrow' : 'Today';
-    const timeText = travelTimeInput.value;
-    return `${dateText} from ${timeText}`;
+    return travelTimeInput.value;
 }
 
 // Update the search info display
@@ -129,11 +119,10 @@ function updateSearchInfo() {
         return;
     }
 
-    const dateText = travelDateSelect?.value === 'tomorrow' ? 'Tomorrow' : 'Today';
     const timeText = travelTimeInput?.value || '';
 
     if (timeText) {
-        searchInfoEl.innerHTML = `Showing trains for <span class="date-label">${dateText}</span> from <span class="time-label">${timeText}</span> (1 hour)`;
+        searchInfoEl.innerHTML = `Showing trains from <span class="time-label">${timeText}</span> (2 hours)`;
         searchInfoEl.classList.add('active');
     } else {
         searchInfoEl.classList.remove('active');
@@ -588,7 +577,7 @@ async function loadTrains() {
     trainBoard.style.display = 'none';
 
     try {
-        const timeWindow = 60; // Show 1 hour of trains
+        const timeWindow = 120; // Show 2 hours of trains
         const timeOffset = currentTimeOffset; // Offset from now in minutes
         const filterTo = toStation.code;
 
@@ -673,15 +662,14 @@ function parseTimeToMinutes(timeStr) {
 }
 
 function getSearchTimeDescription() {
-    if (!travelDateSelect || !travelTimeInput || !travelTimeInput.value) {
-        return 'the next hour';
+    if (!travelTimeInput || !travelTimeInput.value) {
+        return 'the next 2 hours';
     }
-    const dateText = travelDateSelect.value === 'tomorrow' ? 'tomorrow' : 'today';
     const timeText = travelTimeInput.value;
     if (currentTimeOffset === 0) {
-        return 'the next hour';
+        return 'the next 2 hours';
     }
-    return `1 hour from ${timeText} ${dateText}`;
+    return `2 hours from ${timeText}`;
 }
 
 function renderTrains(services, hadErrors = false) {
