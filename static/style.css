@@ -721,6 +721,18 @@ header h1 {
         width: 100%;
     }
 
+    .panel-calling-points {
+        padding: 8px 12px;
+    }
+
+    .panel-stop-name {
+        font-size: 0.85rem;
+    }
+
+    .panel-stop-time {
+        font-size: 0.8rem;
+    }
+
     .selected-departure-station {
         text-align: center;
     }
@@ -983,6 +995,40 @@ footer {
     .panel-train-platform {
         font-size: 0.8rem;
         padding: 3px 8px;
+    }
+
+    .panel-train-row {
+        width: 100%;
+        gap: 8px;
+    }
+
+    .panel-expand-icon {
+        width: 16px;
+        height: 16px;
+        font-size: 11px;
+    }
+
+    .panel-calling-points {
+        padding: 8px 10px;
+    }
+
+    .panel-stop {
+        padding: 3px 0;
+        padding-left: 8px;
+    }
+
+    .panel-stop-name {
+        font-size: 0.8rem;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .panel-stop-time {
+        font-size: 0.75rem;
+        margin-left: 8px;
     }
 
     .route-inputs {
