@@ -359,6 +359,137 @@ header h1 {
     color: #fff;
 }
 
+/* DateTime Filter */
+.datetime-filter {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 15px;
+}
+
+.date-selector,
+.time-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.datetime-filter label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.datetime-filter select,
+.datetime-filter input[type="time"] {
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    border: 2px solid #3a3a5c;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.datetime-filter select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+}
+
+.datetime-filter input[type="time"] {
+    min-width: 120px;
+}
+
+.datetime-filter input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+.datetime-filter select:hover,
+.datetime-filter select:focus,
+.datetime-filter input[type="time"]:hover,
+.datetime-filter input[type="time"]:focus {
+    border-color: #00d4ff;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+.datetime-filter select option {
+    background: #2a2a4a;
+    color: #fff;
+}
+
+.search-btn,
+.now-btn {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.search-btn {
+    background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+    color: #fff;
+}
+
+.search-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+}
+
+.now-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 2px solid #3a3a5c;
+}
+
+.now-btn:hover {
+    border-color: #00d4ff;
+    background: rgba(0, 212, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+    .datetime-filter {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .date-selector,
+    .time-selector {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .datetime-filter select,
+    .datetime-filter input[type="time"] {
+        flex: 1;
+    }
+
+    .search-btn,
+    .now-btn {
+        width: 48%;
+    }
+
+    .datetime-filter > .search-btn,
+    .datetime-filter > .now-btn {
+        flex: 1;
+    }
+}
+
 .tab-btn {
     padding: 12px 30px;
     font-size: 1rem;
