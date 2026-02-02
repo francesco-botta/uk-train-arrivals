@@ -495,6 +495,31 @@ header h1 {
 
     .commute-panel {
         max-width: 100%;
+        min-width: unset;
+    }
+
+    .commute-section {
+        padding: 15px;
+    }
+
+    .section-label {
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    .station-departures-section {
+        flex-direction: column;
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .station-departures-section .departures-search {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .selected-departure-station {
+        text-align: center;
     }
 }
 
@@ -694,6 +719,10 @@ footer {
         padding: 10px;
     }
 
+    header h1 {
+        font-size: 1.5rem;
+    }
+
     .train-board {
         font-size: 0.8rem;
     }
@@ -701,6 +730,52 @@ footer {
     .train-board th,
     .train-board td {
         padding: 8px 5px;
+    }
+
+    .commute-section,
+    .station-departures-section {
+        padding: 12px;
+    }
+
+    .panel-header {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+    }
+
+    .panel-train-item {
+        padding: 8px 10px;
+    }
+
+    .panel-train-time {
+        font-size: 1rem;
+    }
+
+    .route-inputs {
+        padding: 12px;
+    }
+
+    .station-input-group {
+        padding: 12px;
+    }
+
+    #from-station-search,
+    #to-station-search {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+
+    .section-divider {
+        margin: 15px auto;
+    }
+
+    .time-filter select {
+        padding: 8px 30px 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    .refresh-btn {
+        padding: 6px 16px;
+        font-size: 0.85rem;
     }
 }
 
