@@ -585,6 +585,112 @@ header h1 {
     font-size: 0.9rem;
 }
 
+/* Clickable panel trains */
+.panel-train-item.clickable {
+    cursor: pointer;
+}
+
+.panel-train-item.clickable:hover {
+    background: rgba(0, 212, 255, 0.1);
+}
+
+.panel-train-item.expanded {
+    background: rgba(0, 212, 255, 0.15);
+    border-bottom-color: transparent;
+}
+
+.panel-train-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-expand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    background: rgba(0, 212, 255, 0.2);
+    color: #00d4ff;
+    font-weight: bold;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.panel-train-item.clickable:hover .panel-expand-icon {
+    background: rgba(0, 212, 255, 0.4);
+}
+
+/* Panel calling points */
+.panel-calling-points {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.panel-stops-loading,
+.panel-stops-empty,
+.panel-stops-error {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 5px 0;
+}
+
+.panel-stops-error {
+    color: #ff6b6b;
+}
+
+.panel-stops-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.panel-stop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-left: 2px solid rgba(0, 212, 255, 0.4);
+    padding-left: 10px;
+}
+
+.panel-stop.final {
+    border-left-color: #00d4ff;
+}
+
+.panel-stop-name {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+}
+
+.panel-stop.final .panel-stop-name {
+    color: #00d4ff;
+    font-weight: 600;
+}
+
+.panel-stop-time {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.panel-stop-time.delayed {
+    color: #ffc107;
+}
+
+.panel-stop-time.arrived {
+    color: #00ff88;
+}
+
+.panel-stop-time.cancelled {
+    color: #ff6b6b;
+}
+
 @media (max-width: 768px) {
     .commute-panels {
         flex-direction: column;

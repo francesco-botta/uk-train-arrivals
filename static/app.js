@@ -808,10 +808,11 @@ async function loadSuttonDepartures() {
             return;
         }
 
-        suttonTrains.innerHTML = services.slice(0, 10).map(service => {
+        suttonTrains.innerHTML = services.slice(0, 10).map((service, index) => {
             const time = service.std || '-';
             const expected = service.etd || '';
             const platform = service.platform || '-';
+            const serviceId = service.serviceID || service.rsid || '';
             const destination = service.destination && service.destination[0]
                 ? getStationName(service.destination[0].crs)
                 : '-';
@@ -834,8 +835,9 @@ async function loadSuttonDepartures() {
             }
 
             return `
-                <div class="panel-train-item">
+                <div class="panel-train-item clickable" data-service-id="${serviceId}" data-panel-index="sutton-${index}">
                     <div class="panel-train-main">
+                        <span class="panel-expand-icon">+</span>
                         <span class="panel-train-time">${time}</span>
                         <span class="panel-train-dest">${destination}</span>
                     </div>
@@ -844,8 +846,16 @@ async function loadSuttonDepartures() {
                         <span class="panel-train-platform">Plat ${platform}</span>
                     </div>
                 </div>
+                <div class="panel-calling-points" id="panel-stops-sutton-${index}" style="display: none;">
+                    <div class="panel-stops-loading">Loading stops...</div>
+                </div>
             `;
         }).join('');
+
+        // Add click handlers
+        suttonTrains.querySelectorAll('.panel-train-item.clickable').forEach(item => {
+            item.addEventListener('click', () => togglePanelCallingPoints(item));
+        });
 
     } catch (error) {
         suttonTrains.innerHTML = `<div class="panel-no-trains">Data service unavailable</div>`;
@@ -853,6 +863,8 @@ async function loadSuttonDepartures() {
 }
 
 async function loadCommutePanel(fromCode, toCode, container) {
+    const panelId = `${fromCode}-${toCode}`.toLowerCase();
+
     try {
         const response = await fetch(
             `${HUXLEY_BASE_URL}/departures/${fromCode}/to/${toCode}/10?expand=true&timeOffset=0&timeWindow=120`
@@ -870,10 +882,11 @@ async function loadCommutePanel(fromCode, toCode, container) {
             return;
         }
 
-        container.innerHTML = services.slice(0, 6).map(service => {
+        container.innerHTML = services.slice(0, 6).map((service, index) => {
             const time = service.std || '-';
             const expected = service.etd || '';
             const platform = service.platform || '-';
+            const serviceId = service.serviceID || service.rsid || '';
 
             let expectedClass = '';
             let expectedText = '';
@@ -893,18 +906,118 @@ async function loadCommutePanel(fromCode, toCode, container) {
             }
 
             return `
-                <div class="panel-train-item">
-                    <div>
+                <div class="panel-train-item clickable" data-service-id="${serviceId}" data-panel-index="${panelId}-${index}">
+                    <div class="panel-train-row">
+                        <span class="panel-expand-icon">+</span>
                         <span class="panel-train-time">${time}</span>
                         <span class="panel-train-expected ${expectedClass}">${expectedText}</span>
                     </div>
                     <span class="panel-train-platform">Plat ${platform}</span>
                 </div>
+                <div class="panel-calling-points" id="panel-stops-${panelId}-${index}" style="display: none;">
+                    <div class="panel-stops-loading">Loading stops...</div>
+                </div>
             `;
         }).join('');
 
+        // Add click handlers
+        container.querySelectorAll('.panel-train-item.clickable').forEach(item => {
+            item.addEventListener('click', () => togglePanelCallingPoints(item));
+        });
+
     } catch (error) {
         container.innerHTML = `<div class="panel-no-trains">Data service unavailable</div>`;
+    }
+}
+
+// Toggle calling points for commute panel trains
+async function togglePanelCallingPoints(item) {
+    const panelIndex = item.dataset.panelIndex;
+    const serviceId = item.dataset.serviceId;
+    const callingPointsDiv = document.getElementById(`panel-stops-${panelIndex}`);
+    const expandIcon = item.querySelector('.panel-expand-icon');
+
+    if (!callingPointsDiv) return;
+
+    if (callingPointsDiv.style.display === 'none') {
+        callingPointsDiv.style.display = 'block';
+        if (expandIcon) expandIcon.textContent = '-';
+        item.classList.add('expanded');
+
+        // Only fetch if we haven't loaded yet
+        if (callingPointsDiv.querySelector('.panel-stops-loading')) {
+            await fetchPanelCallingPoints(serviceId, callingPointsDiv);
+        }
+    } else {
+        callingPointsDiv.style.display = 'none';
+        if (expandIcon) expandIcon.textContent = '+';
+        item.classList.remove('expanded');
+    }
+}
+
+async function fetchPanelCallingPoints(serviceId, container) {
+    if (!serviceId) {
+        container.innerHTML = '<div class="panel-stops-error">Service details not available</div>';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${HUXLEY_BASE_URL}/service/${encodeURIComponent(serviceId)}?expand=true`);
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+        const data = await response.json();
+
+        const callingPoints = [];
+        const subsequent = data.subsequentCallingPoints || [];
+        if (subsequent.length > 0 && subsequent[0].callingPoint) {
+            for (const point of subsequent[0].callingPoint) {
+                callingPoints.push({
+                    station: getStationName(point.crs),
+                    crs: point.crs,
+                    st: point.st || '',
+                    et: point.et || '',
+                    at: point.at || '',
+                    isCancelled: point.isCancelled || false
+                });
+            }
+        }
+
+        if (callingPoints.length === 0) {
+            container.innerHTML = '<div class="panel-stops-empty">No intermediate stops</div>';
+            return;
+        }
+
+        const stopsHtml = callingPoints.map((point, idx) => {
+            const isLast = idx === callingPoints.length - 1;
+            let timeDisplay = point.st || '';
+            let timeClass = '';
+
+            if (point.at && point.at !== 'On time') {
+                timeDisplay = point.at;
+                timeClass = 'arrived';
+            } else if (point.et && point.et !== 'On time' && point.et !== point.st) {
+                timeDisplay = `${point.st} (exp ${point.et})`;
+                timeClass = 'delayed';
+            }
+
+            if (point.isCancelled) {
+                timeClass = 'cancelled';
+                timeDisplay = 'Cancelled';
+            }
+
+            return `
+                <div class="panel-stop ${isLast ? 'final' : ''}">
+                    <span class="panel-stop-name">${point.station}</span>
+                    <span class="panel-stop-time ${timeClass}">${timeDisplay}</span>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `<div class="panel-stops-list">${stopsHtml}</div>`;
+
+    } catch (error) {
+        container.innerHTML = `<div class="panel-stops-error">Failed to load stops</div>`;
     }
 }
 
